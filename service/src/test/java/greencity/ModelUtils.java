@@ -319,6 +319,17 @@ public class ModelUtils {
                 .build());
     }
 
+    public static ShoppingListItemTranslation getShoppingListItemTranslationObject() {
+        return ShoppingListItemTranslation.builder()
+                .id(2L)
+                .language(new Language(1L, AppConstant.DEFAULT_LANGUAGE_CODE, Collections.emptyList(),
+                        Collections.emptyList()))
+                .content("Buy a bamboo toothbrush")
+                .shoppingListItem(
+                        new ShoppingListItem(1L, Collections.emptyList(), Collections.emptySet(), Collections.emptyList()))
+                .build();
+    }
+
     public static HabitFactTranslation getFactTranslation() {
         return HabitFactTranslation.builder()
             .id(1L)
