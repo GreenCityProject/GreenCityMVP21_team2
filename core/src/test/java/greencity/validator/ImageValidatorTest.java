@@ -3,8 +3,6 @@ package greencity.validator;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -20,10 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 class ImageValidatorTest {
 
     private ImageValidator imageValidator;
-
-    private static final List<String> validImageContentTypes = Arrays.asList("image/jpeg", "image/png", "image/jpg");
-    private static final List<String> invalidContentTypes = Arrays.asList("image/bmp", "image/gif", "audio/mp3",
-            "video/mp4", "text/plain", "application/json");
 
     @BeforeEach
     public void init() {
@@ -48,15 +42,15 @@ class ImageValidatorTest {
         assertFalse(imageValidator.isValid(image, null));
     }
 
-    static Stream<MultipartFile> filesWithValidContentType() {
+    private static Stream<MultipartFile> filesWithValidContentType() {
+        Stream<String> validImageContentTypes = Stream.of("image/jpeg", "image/png", "image/jpg");
         return validImageContentTypes
-                .stream()
                 .map(contentType -> new MockMultipartFile("image", "image", contentType, "valid-content-type".getBytes()));
     }
 
-    static Stream<MultipartFile> filesWithInvalidContentType() {
+    private static Stream<MultipartFile> filesWithInvalidContentType() {
+        Stream<String> invalidContentTypes = Stream.of("image/bmp", "image/gif", "audio/mp3", "video/mp4", "text/plain", "application/json");
         return invalidContentTypes
-                .stream()
                 .map(contentType -> new MockMultipartFile("file", "file", contentType, "invalid-content-type".getBytes()));
     }
 }
