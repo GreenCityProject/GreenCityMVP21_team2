@@ -1,5 +1,10 @@
 package greencity.service;
 
+import static greencity.ModelUtils.*;
+import static java.util.Optional.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import greencity.dto.specification.SpecificationNameDto;
 import greencity.dto.specification.SpecificationVO;
 import greencity.entity.Specification;
@@ -19,11 +24,6 @@ import org.modelmapper.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-
-import static greencity.ModelUtils.*;
-import static java.util.Optional.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class SpecificationServiceTest {
@@ -108,8 +108,6 @@ public class SpecificationServiceTest {
         verify(specificationRepo).findAll();
         verify(modelMapper).map(emptyList, type);
     }
-
-
 
     @ParameterizedTest
     @CsvSource({"1"})
