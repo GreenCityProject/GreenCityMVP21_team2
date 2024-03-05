@@ -105,13 +105,13 @@
                     <br>
                     <table class="light-text">
                         <tr>
-                            <td>&nbsp ru
+                            <td>&nbsp ua
                                 <i id="habit_translation3" class="table-edit-translation-icon"
                                    th:href="@{|/management/habits/${habit.getId()}/find|}"
                                    style="padding: 5px"></i>
                             </td>
                         </tr>
-                        <tr th:each="translation: ${habit.habitTranslations.?[languageCode == 'ru']}">
+                        <tr th:each="translation: ${habit.habitTranslations.?[languageCode == 'ua']}">
                             <td>&nbsp [[${translation.name}]]</td>
                         </tr>
                     </table>
