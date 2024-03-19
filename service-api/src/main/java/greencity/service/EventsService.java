@@ -7,6 +7,8 @@ import greencity.dto.events.EventVO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 public interface EventsService {
 
     /**
@@ -15,7 +17,7 @@ public interface EventsService {
      * @param addEventDtoRequest .
      * @return {@link EventDto} instance.
      */
-    EventDto save(AddEventDtoRequest addEventDtoRequest, MultipartFile image, Long userId);
+    EventDto save(AddEventDtoRequest addEventDtoRequest, List<MultipartFile> images, Long userId);
 
 
     /**

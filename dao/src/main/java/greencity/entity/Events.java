@@ -57,6 +57,6 @@ public class Events {
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> eventAttender = new HashSet<>();
 
-//    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
-//    private List<EventsImages> eventsImages;
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+    private List<EventsImages> eventsImages;
 }

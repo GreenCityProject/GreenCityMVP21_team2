@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Validated
 @RestController
@@ -70,10 +73,10 @@ public class EventsController {
     public ResponseEntity<EventDto> save(
             @Parameter(description = SwaggerExampleModel.ADD_EVENT,
                     required = true) @RequestPart AddEventDtoRequest addEventDtoRequest,
-            @Parameter(description = "Image of event") @ImageValidation
-            @RequestPart(required = false) MultipartFile image,
+            @Parameter(description = "Image of event") @Valid
+            @RequestPart(required = false) List<MultipartFile> images,
             @Parameter(hidden = true) @CurrentUser UserVO user) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                eventsService.save(addEventDtoRequest, image, user.getId()));
+                eventsService.save(addEventDtoRequest, images, user.getId()));
     }
 }

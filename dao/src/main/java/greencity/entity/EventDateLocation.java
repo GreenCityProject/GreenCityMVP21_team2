@@ -30,6 +30,7 @@ public class EventDateLocation {
 
     @Column
     private double latitude;
+
     @Column
     private double longitude;
 

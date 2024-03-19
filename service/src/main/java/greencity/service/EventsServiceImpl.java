@@ -3,16 +3,11 @@ package greencity.service;
 import greencity.client.RestClient;
 import greencity.constant.ErrorMessage;
 import greencity.dto.PageableAdvancedDto;
-import greencity.dto.events.AddEventDtoRequest;
-import greencity.dto.events.EventAuthorDto;
-import greencity.dto.events.EventDto;
-import greencity.dto.events.EventVO;
+import greencity.dto.events.*;
 import greencity.dto.tag.TagTranslationVO;
 import greencity.dto.tag.TagUaEnDto;
 import greencity.dto.tag.TagVO;
-import greencity.entity.Events;
-import greencity.entity.Tag;
-import greencity.entity.User;
+import greencity.entity.*;
 import greencity.enums.TagType;
 import greencity.exception.exceptions.NotSavedException;
 import greencity.repository.EventsRepo;
@@ -40,55 +35,65 @@ public class EventsServiceImpl implements EventsService{
     private final FileService fileService;
 
     @Override
-    public EventDto save(AddEventDtoRequest addEventDtoRequest, MultipartFile image, Long userId) {
-        Events events = modelMapper.map(addEventDtoRequest, Events.class);
+    public EventDto save(AddEventDtoRequest addEventDtoRequest, List<MultipartFile> images, Long userId) {
         EventDto eventsDto = modelMapper.map(addEventDtoRequest, EventDto.class);
         User user = modelMapper.map(restClient.findById(userId), User.class);
-        events.setOrganizer(user);
+
         eventsDto.setOrganizer(modelMapper.map(user, EventAuthorDto.class));
         ZonedDateTime date = ZonedDateTime.now();
-        events.setCreationDate(date);
+
         eventsDto.setCreationDate(date.toString());
-        if (events.getTags().size() < addEventDtoRequest.getTags().size()) {
-            throw new NotSavedException(ErrorMessage.EVENTS_NOT_SAVED);
-        }
+
         List<TagVO> tagVOS = tagService.findTagsByNamesAndType(
                 addEventDtoRequest.getTags(), TagType.EVENT);
 
-        List<Tag> tags = tagVOS.stream()
-                .map(tagVO -> modelMapper.map(tagVO, Tag.class))
-                .collect(Collectors.toList());
-        tagVOS.forEach(System.out::println);
         List<TagUaEnDto> tagsUaEnDto = tagVOS.stream()
                 .map(tagVO -> TagUaEnDto.builder()
                         .id(tagVO.getId())
-                        .nameEn(String.valueOf(tagVOS.stream()
-                                .flatMap(t -> t.getTagTranslations().stream())
-                                    .filter(t -> t.getLanguageVO().getCode().equals("en"))
-                                    .map(TagTranslationVO::getName)
-                                    .collect(Collectors.toList())))
-                        .nameUa(String.valueOf(tagVOS.stream()
-                                .flatMap(t -> t.getTagTranslations().stream())
-                                .filter(t -> t.getLanguageVO().getCode().equals("ua"))
-                                .map(TagTranslationVO::getName)
-                                .collect(Collectors.toList())))
+                        .nameEn(extractFromTagVONameInLanguage(tagVOS, "en"))
+                        .nameUa(extractFromTagVONameInLanguage(tagVOS,"ua"))
                         .build())
                 .collect(Collectors.toList());
 
-        events.setTags(tags);
         eventsDto.setTags(tagsUaEnDto);
 
-        if (events.getOpen() == null) {
-            events.setOpen(true);
+        if (eventsDto.getOpen() == null) {
+            eventsDto.setOpen(true);
         }
-        if (image != null) {
-            events.setTitleImage(fileService.upload(image));
+        MultipartFile titleImage = images.getFirst();
+        if (titleImage != null) {
+            eventsDto.setTitleImage(fileService.upload(titleImage));
         }
-        if(events.getTitleImage() == null){
-            events.setTitleImage("some image");
+        if(eventsDto.getTitleImage() == null){
+            eventsDto.setTitleImage("some image");
         }
-        eventsDto.setTitleImage(events.getTitleImage());
+        if (!images.isEmpty()) {
+            images.removeFirst();
+            eventsDto.setAdditionalImages(images.stream()
+                    .map(fileService::upload)
+                    .collect(Collectors.toList()));
+        }
+
         eventsDto.setDates(addEventDtoRequest.getDatesLocations());
+
+        Events events = modelMapper.map(eventsDto, Events.class);
+        events.setCreationDate(date);
+        events.setDatesLocations(addEventDtoRequest.getDatesLocations().stream()
+                .map(eventDateLocationDto -> EventDateLocation.builder()
+                        .event(events)
+                        .startDate(eventDateLocationDto.getStartDate())
+                        .finishDate(eventDateLocationDto.getFinishDate())
+                        .latitude(eventDateLocationDto.getCoordinates().getLatitude())
+                        .longitude(eventDateLocationDto.getCoordinates().getLongitude())
+                        .onlineLink(eventDateLocationDto.getOnlineLink())
+                        .build())
+                .collect(Collectors.toList()));
+        events.setEventsImages(eventsDto.getAdditionalImages().stream()
+                        .map(link -> EventsImages.builder()
+                                .link(link)
+                                .event(events)
+                                .build())
+                .collect(Collectors.toList()));
         try {
             eventsRepo.save(events);
         } catch (DataIntegrityViolationException e) {
@@ -120,5 +125,13 @@ public class EventsServiceImpl implements EventsService{
     @Override
     public void rate(Long id, int grade) {
 
+    }
+
+    private String extractFromTagVONameInLanguage (List<TagVO> tagVOS, String language) {
+        return String.valueOf(tagVOS.stream()
+                .flatMap(t -> t.getTagTranslations().stream())
+                .filter(t -> t.getLanguageVO().getCode().equals(language))
+                .map(TagTranslationVO::getName)
+                .collect(Collectors.toList()));
     }
 }

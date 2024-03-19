@@ -77,4 +77,18 @@
             <dropTable tableName="events_tags"/>
         </rollback>
     </changeSet>
+    <changeSet id="changeSetEventImagesChekhovska" author="Maryna Chekhovska">
+        <createTable tableName="events_images">
+            <column name="id" autoIncrement="true" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name ="link" type="VARCHAR"/>
+            <column name="event_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_image_event_id" references="events (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="events_images"/>
+        </rollback>
+    </changeSet>
 </databaseChangeLog>
