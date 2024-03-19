@@ -4,6 +4,10 @@ import greencity.annotations.*;
 import greencity.constant.HttpStatuses;
 import greencity.constant.SwaggerExampleModel;
 import greencity.dto.PageableAdvancedDto;
+import greencity.dto.econews.EcoNewsDto;
+import greencity.dto.econews.EcoNewsGenericDto;
+import greencity.dto.econews.EcoNewsVO;
+import greencity.dto.econews.UpdateEcoNewsDto;
 import greencity.dto.events.AddEventDtoRequest;
 import greencity.dto.events.EventDto;
 import greencity.dto.user.UserVO;
@@ -78,5 +82,31 @@ public class EventsController {
             @Parameter(hidden = true) @CurrentUser UserVO user) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 eventsService.save(addEventDtoRequest, images, user.getId()));
+    }
+    /**
+     * Method for updating {@link EventDto}.
+     *
+     * @param  {@link EventDto} entity.
+     * @return dto {@link EventDto} instance.
+     */
+    @Operation(summary = "Update event")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
+                    content = @Content(schema = @Schema(implementation = EventDto.class))),
+            @ApiResponse(responseCode = "303", description = HttpStatuses.SEE_OTHER),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN)
+    })
+    @PutMapping(path = "/update", consumes = {MediaType.APPLICATION_JSON_VALUE,
+            MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<EventDto> update(
+            @Parameter(description = SwaggerExampleModel.UPDATE_EVENT,
+                    required = true) @RequestPart EventDto eventDto,
+            @Parameter(description = "Image of events") @Valid @RequestPart(
+                    required = false) List<MultipartFile> images,
+            @Parameter(hidden = true) @CurrentUser UserVO user) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                eventsService.update(eventDto, images, user.getId()));
     }
 }

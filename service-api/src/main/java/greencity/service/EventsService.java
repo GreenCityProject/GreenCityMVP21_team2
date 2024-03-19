@@ -46,10 +46,10 @@ public interface EventsService {
     /**
      * Method for updating {@link EventDto} instance.
      *
-     * @param addEventDtoRequest - instance of {@link EventDto}.
+     * @param {@link EventDto}.
      * @return instance of {@link EventDto};=.
      */
-    EventDto update(AddEventDtoRequest addEventDtoRequest, MultipartFile image);
+    EventDto update(EventDto eventDto, List<MultipartFile> images, Long userId);
 
     /**
      * Method for rating the {@link EventDto} instance by its id.

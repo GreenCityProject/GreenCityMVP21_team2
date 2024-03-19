@@ -19,4 +19,6 @@ public class AddEventDtoRequest {
     private String title;
 
     private List<String> tags;
+
+    private Boolean open;
 }
