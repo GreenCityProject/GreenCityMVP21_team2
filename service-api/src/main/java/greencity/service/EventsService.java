@@ -38,6 +38,14 @@ public interface EventsService {
     EventVO findById(Long id);
 
     /**
+     * Method for getting the {@link EventDto} instance by its id.
+     *
+     * @param id {@link EventDto} instance id.
+     * @return {@link EventDto} instance.
+     */
+    EventDto findEventById(Long id);
+
+    /**
      * Method for deleting the {@link EventDto} instance by its id.
      *
      * @param id   - {@link EventDto} instance id which will be deleted.

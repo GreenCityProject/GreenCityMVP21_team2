@@ -84,6 +84,12 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
+    public EventDto findEventById(Long id) {
+        Events events = eventsRepo.findById(id).orElseThrow(() -> new NotFoundException(ErrorMessage.EVENTS_NOT_FOUND_BY_ID + id));
+        return converterEventToEventDto(events);
+    }
+
+    @Override
     public void delete(Long id, UserVO user) {
         EventVO eventVO = findById(id);
         if (user.getRole() != Role.ROLE_ADMIN && !user.getId().equals(eventVO.getOrganizer().getId())) {
@@ -146,6 +152,21 @@ public class EventsServiceImpl implements EventsService {
                         .build())
                 .collect(Collectors.toList());
     }
+    private List<EventDateLocationDto> converterListEventDateLocationToListEventDateLocationDto
+            (List<EventDateLocation> eventDateLocations){
+        return eventDateLocations.stream()
+                .map(eventDateLocation -> EventDateLocationDto.builder()
+                        .id(eventDateLocation.getId())
+                        .startDate(eventDateLocation.getStartDate())
+                        .finishDate(eventDateLocation.getFinishDate())
+                        .onlineLink(eventDateLocation.getOnlineLink())
+                        .coordinates(AddressDto.builder()
+                                .latitude(eventDateLocation.getLatitude())
+                                .longitude(eventDateLocation.getLongitude())
+                                .build())
+                        .build())
+                .collect(Collectors.toList());
+    }
     private List<EventsImages> converterListStringToListEventsImages (List<String> list, Events events){
         if( list != null) {
             return list.stream()
@@ -177,5 +198,14 @@ public class EventsServiceImpl implements EventsService {
                 eventDto.getDates(), events));
         events.setEventsImages(converterListStringToListEventsImages(eventDto.getAdditionalImages(), events));
         return events;
+    }
+    private EventDto converterEventToEventDto (Events events){
+        EventDto eventDto = modelMapper.map(events, EventDto.class);
+        eventDto.setAdditionalImages(events.getEventsImages().stream().map(EventsImages::getLink).collect(Collectors.toList()));
+        List<TagVO> tagVOS = events.getTags().stream().map(event ->  tagService.findById(
+                event.getId())).collect(Collectors.toList());
+        eventDto.setTags(converterListTagVOToListTagUaEnDto(tagVOS));
+        eventDto.setDates(converterListEventDateLocationToListEventDateLocationDto(events.getDatesLocations()));
+        return eventDto;
     }
 }

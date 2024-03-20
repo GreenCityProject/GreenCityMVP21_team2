@@ -60,6 +60,25 @@ public class EventsController {
     }
 
     /**
+     * Method for getting event by id.
+     *
+     * @return {@link EventDto} instance.
+     * @author
+     */
+    @Operation(summary = "Get the event by id.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @ApiPageable
+    @GetMapping("/event/{eventId}")
+    public ResponseEntity<EventDto> getEvent (@PathVariable Long eventId){
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(eventsService.findEventById(eventId));
+    }
+
+    /**
      * Method for creating {@link EventDto}.
      *
      * @param addEventDtoRequest - dto for {@link EventDto} entity.
