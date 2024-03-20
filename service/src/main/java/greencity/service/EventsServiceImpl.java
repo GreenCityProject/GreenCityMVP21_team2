@@ -71,10 +71,29 @@ public class EventsServiceImpl implements EventsService {
 
     @Override
     public PageableAdvancedDto<EventDto> findAll(Pageable page) {
-        Page<Events> pages;
-        pages = eventsRepo.findAll(page);
-        return null;
+        Page<Events> pages = eventsRepo.findAllByOrderByCreationDateDesc(page);
+        return buildPageableAdvancedDtoByEventDto(pages);
 
+    }
+
+    @Override
+    public PageableAdvancedDto<EventDto> findAllEventsCreatedByUser(Pageable page, UserVO user) {
+        Page<Events> pages = eventsRepo.findAllByOrganizerOrderByCreationDateDesc(modelMapper.map(user, User.class), page);
+        return buildPageableAdvancedDtoByEventDto(pages);
+    }
+
+    @Override
+    public  PageableAdvancedDto<EventDto> findAllRelatedToUserEvents(UserVO user, Pageable page){
+        Page<Events> pages = eventsRepo.findAllByOrganizerOrEventAttenderOrderByCreationDateDesc(
+                user.getId(), page);
+        return buildPageableAdvancedDtoByEventDto(pages);
+    }
+
+    @Override
+    public PageableAdvancedDto<EventDto> findAllUserEvents(UserVO user, Pageable page){
+        Page<Events> pages = eventsRepo.findAllByEventAttenderOrderByCreationDateDesc(
+                user.getId(), page);
+        return buildPageableAdvancedDtoByEventDto(pages);
     }
 
     @Override
@@ -199,6 +218,7 @@ public class EventsServiceImpl implements EventsService {
         events.setEventsImages(converterListStringToListEventsImages(eventDto.getAdditionalImages(), events));
         return events;
     }
+
     private EventDto converterEventToEventDto (Events events){
         EventDto eventDto = modelMapper.map(events, EventDto.class);
         eventDto.setAdditionalImages(events.getEventsImages().stream().map(EventsImages::getLink).collect(Collectors.toList()));
@@ -207,5 +227,22 @@ public class EventsServiceImpl implements EventsService {
         eventDto.setTags(converterListTagVOToListTagUaEnDto(tagVOS));
         eventDto.setDates(converterListEventDateLocationToListEventDateLocationDto(events.getDatesLocations()));
         return eventDto;
+    }
+
+    private PageableAdvancedDto<EventDto> buildPageableAdvancedDtoByEventDto(Page<Events> eventsPage) {
+        List<EventDto> eventsDtos = eventsPage.stream()
+                .map(this::converterEventToEventDto)
+                .collect(Collectors.toList());
+
+        return new PageableAdvancedDto<>(
+                eventsDtos,
+                eventsPage.getTotalElements(),
+                eventsPage.getPageable().getPageNumber(),
+                eventsPage.getTotalPages(),
+                eventsPage.getNumber(),
+                eventsPage.hasPrevious(),
+                eventsPage.hasNext(),
+                eventsPage.isFirst(),
+                eventsPage.isLast());
     }
 }

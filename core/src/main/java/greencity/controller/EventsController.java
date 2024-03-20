@@ -4,10 +4,6 @@ import greencity.annotations.*;
 import greencity.constant.HttpStatuses;
 import greencity.constant.SwaggerExampleModel;
 import greencity.dto.PageableAdvancedDto;
-import greencity.dto.econews.EcoNewsDto;
-import greencity.dto.econews.EcoNewsGenericDto;
-import greencity.dto.econews.EcoNewsVO;
-import greencity.dto.econews.UpdateEcoNewsDto;
 import greencity.dto.events.AddEventDtoRequest;
 import greencity.dto.events.EventDto;
 import greencity.dto.user.UserVO;
@@ -41,10 +37,11 @@ public class EventsController {
     private final TagsService tagService;
     private final FileService fileService;
 
+
     /**
      * Method for getting all events.
      *
-     * @return {@link } instance.
+     * @return {@link PageableAdvancedDto} of {@link EventDto} instance.
      * @author
      */
     @Operation(summary = "Get all events.")
@@ -57,6 +54,66 @@ public class EventsController {
     public ResponseEntity<PageableAdvancedDto<EventDto>> findAll(@Parameter(hidden = true) Pageable page) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(eventsService.findAll(page));
+    }
+
+    /**
+     * Method for getting all events by organizer.
+     *
+     * @return {@link PageableAdvancedDto} of {@link EventDto} instance.
+     * @author
+     */
+    @Operation(summary = "Get all events by organizer.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED)
+    })
+    @ApiPageable
+    @GetMapping("/myEvents/createdEvents")
+    public ResponseEntity<PageableAdvancedDto<EventDto>> getEventsCreatedByUser(@Parameter(hidden = true) Pageable page,
+            @Parameter(hidden = true) @CurrentUser UserVO user) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(eventsService.findAllEventsCreatedByUser(page, user));
+    }
+
+    /**
+     * Method for getting all users related events.
+     *
+     * @return {@link PageableAdvancedDto} of {@link EventDto} instance.
+     * @author
+     */
+    @Operation(summary = "Get all users events and events which were created by this user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED)
+    })
+    @ApiPageable
+    @GetMapping("/myEvents/relatedEvents")
+    public ResponseEntity<PageableAdvancedDto<EventDto>> getRelatedToUserEvents(@Parameter(hidden = true) Pageable page,
+                                                                                @Parameter(hidden = true) @CurrentUser UserVO user) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(eventsService.findAllRelatedToUserEvents(user, page));
+    }
+
+    /**
+     * Method for getting all {@link EventDto} where the user is an event attender.
+     *
+     * @return {@link PageableAdvancedDto} of {@link EventDto} instance.
+     * @author
+     */
+    @Operation(summary = "Get all users events.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED)
+    })
+    @ApiPageable
+    @GetMapping("/myEvents")
+    public ResponseEntity<PageableAdvancedDto<EventDto>> getUserEvents(@Parameter(hidden = true) Pageable page,
+               @Parameter(hidden = true) @CurrentUser UserVO user) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(eventsService.findAllUserEvents(user, page));
     }
 
     /**

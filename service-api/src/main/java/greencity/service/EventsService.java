@@ -20,7 +20,6 @@ public interface EventsService {
      */
     EventDto save(AddEventDtoRequest addEventDtoRequest, List<MultipartFile> images, Long userId);
 
-
     /**
      * Method for getting all events by page.
      *
@@ -28,6 +27,33 @@ public interface EventsService {
      * @return PageableDto of {@link EventDto} instances.
      */
     PageableAdvancedDto<EventDto> findAll(Pageable page);
+
+    /**
+     * Method for getting all events by page.
+     *
+     * @param user organizer of event.
+     * @param page parameters of to search.
+     * @return PageableDto of {@link EventDto} instances.
+     */
+    PageableAdvancedDto<EventDto> findAllEventsCreatedByUser(Pageable page, UserVO user);
+
+    /**
+     * Method for getting all events by page.
+     *
+     * @param user organizer and attender of event.
+     * @param page parameters of to search.
+     * @return PageableDto of {@link EventDto} instances.
+     */
+    PageableAdvancedDto<EventDto> findAllRelatedToUserEvents(UserVO user, Pageable page);
+
+    /**
+     * Method for getting all events by page.
+     *
+     * @param user attender of event.
+     * @param page parameters of to search.
+     * @return PageableDto of {@link EventDto} instances.
+     */
+    PageableAdvancedDto<EventDto> findAllUserEvents(UserVO user, Pageable page);
 
     /**
      * Method for getting the {@link EventVO} instance by its id.
