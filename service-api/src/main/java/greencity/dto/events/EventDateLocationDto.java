@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = "event")
+@ToString
 @Builder
 @EqualsAndHashCode
 public class EventDateLocationDto {
@@ -16,7 +16,7 @@ public class EventDateLocationDto {
 
     private AddressDto coordinates;
 
-    private EventDto event;
+//    private EventDto event;
 
     private LocalDateTime startDate;
 

@@ -11,31 +11,29 @@ import lombok.*;
 @EqualsAndHashCode
 public class AddressDto {
 
-    private String cityEn;
+//    private String cityEn;
+//
+//    private String cityUa;
+//
+//    private String countryEn;
+//
+//    private String countryUa;
+//
+//    private String formattedAddressEn;
+//
+//    private String formattedAddressUa;
+//
+//    private String houseNumber;
 
-    private String cityUa;
-
-    private String countryEn;
-
-    private String countryUa;
-
-    private String formattedAddressEn;
-
-    private String formattedAddressUa;
-
-    private String houseNumber;
-
-    @ToString.Include
     private Double latitude;
 
-    @ToString.Include
     private Double longitude;
 
-    private String regionEn;
-
-    private String regionUa;
-
-    private String streetEn;
-
-    private String streetUa;
+//    private String regionEn;
+//
+//    private String regionUa;
+//
+//    private String streetEn;
+//
+//    private String streetUa;
 }
