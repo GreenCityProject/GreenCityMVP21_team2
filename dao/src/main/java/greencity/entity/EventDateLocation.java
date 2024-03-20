@@ -3,6 +3,7 @@ package greencity.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "event_date_locations")
@@ -23,10 +24,10 @@ public class EventDateLocation {
     private Events event;
 
     @Column(nullable = false)
-    private LocalDateTime startDate;
+    private ZonedDateTime startDate;
 
     @Column(nullable = false)
-    private LocalDateTime finishDate;
+    private ZonedDateTime finishDate;
 
     @Column
     private double latitude;

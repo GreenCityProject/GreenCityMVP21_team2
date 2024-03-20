@@ -2,6 +2,7 @@ package greencity.dto.events;
 
 import lombok.*;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,9 +19,9 @@ public class EventDateLocationDto {
 
 //    private EventDto event;
 
-    private LocalDateTime startDate;
+    private ZonedDateTime startDate;
 
-    private LocalDateTime finishDate;
+    private ZonedDateTime finishDate;
 
     private String onlineLink;
 }
