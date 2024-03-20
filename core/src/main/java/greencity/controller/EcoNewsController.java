@@ -285,6 +285,7 @@ public class EcoNewsController {
      */
     @Operation(summary = "Get three recommended eco news.")
     @ApiResponses(value = {
+        @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
         @ApiResponse(responseCode = "200", description = HttpStatuses.OK)
     })
     @GetMapping("/recommended")
