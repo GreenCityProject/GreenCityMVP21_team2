@@ -27,6 +27,12 @@ public final class SwaggerExampleModel {
             + "  \"textTranslation\":\n"
             + "     {\"content\": \"string\",\n"
             + "     \"languageCode\": \"string\"}\n";
+    private static final String UPDATE_EXAMPLE =
+            "\"tags\":[\"string\"],\n"
+                + "\"content\":\"string\",\n"
+                + "\"title\":\"string\",\n"
+                + "\"source\":\"string\",\n"
+                + "\"text\":\"string\"";
 
     private static final String AFTER_EXAMPLE = "\t</pre>\n"
         + "</div>";
@@ -52,9 +58,8 @@ public final class SwaggerExampleModel {
         "Update Eco News\n"
             + IMAGE_DESCRIPTION
             + BEFORE_EXAMPLE
-            + "{\n"
-            + "  \"id\": 0,\n"
-            + EXAMPLE
+            + "{\"id\":\"string\",\n"
+            + UPDATE_EXAMPLE
             + "}\n"
             + AFTER_EXAMPLE;
     public static final String ADD_EVENT = BEFORE_EXAMPLE
