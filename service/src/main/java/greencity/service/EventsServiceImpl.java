@@ -7,8 +7,11 @@ import greencity.dto.events.*;
 import greencity.dto.tag.TagTranslationVO;
 import greencity.dto.tag.TagUaEnDto;
 import greencity.dto.tag.TagVO;
+import greencity.dto.user.UserVO;
 import greencity.entity.*;
+import greencity.enums.Role;
 import greencity.enums.TagType;
+import greencity.exception.exceptions.BadRequestException;
 import greencity.exception.exceptions.NotFoundException;
 import greencity.exception.exceptions.NotSavedException;
 import greencity.repository.EventsRepo;
@@ -16,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,7 +71,10 @@ public class EventsServiceImpl implements EventsService {
 
     @Override
     public PageableAdvancedDto<EventDto> findAll(Pageable page) {
+        Page<Events> pages;
+        pages = eventsRepo.findAll(page);
         return null;
+
     }
 
     @Override
@@ -77,8 +84,12 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
-    public void delete(Long id) {
-
+    public void delete(Long id, UserVO user) {
+        EventVO eventVO = findById(id);
+        if (user.getRole() != Role.ROLE_ADMIN && !user.getId().equals(eventVO.getOrganizer().getId())) {
+            throw new BadRequestException(ErrorMessage.USER_HAS_NO_PERMISSION);
+        }
+        eventsRepo.deleteById(id);
     }
 
     @Override
@@ -89,6 +100,7 @@ public class EventsServiceImpl implements EventsService {
         Events eventForTag = modelMapper.map(eventDto, Events.class);
 
         finalEvent.setTags(eventForTag.getTags());
+        finalEvent.setOpen(eventForTag.getOpen());
 
         try {
             eventsRepo.save(finalEvent);

@@ -109,4 +109,22 @@ public class EventsController {
         return ResponseEntity.status(HttpStatus.OK).body(
                 eventsService.update(eventDto, images, user.getId()));
     }
+
+    /**
+     * Method for deleting {@link EventDto}.
+     *
+     *
+     */
+    @Operation(summary = "Delete event.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @DeleteMapping("/delete/{eventId}")
+    public ResponseEntity<Object> delete(@PathVariable Long eventId,
+                                         @Parameter(hidden = true) @CurrentUser UserVO user) {
+        eventsService.delete(eventId, user);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }

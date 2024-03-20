@@ -4,6 +4,7 @@ import greencity.dto.PageableAdvancedDto;
 import greencity.dto.events.AddEventDtoRequest;
 import greencity.dto.events.EventDto;
 import greencity.dto.events.EventVO;
+import greencity.dto.user.UserVO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,7 +42,7 @@ public interface EventsService {
      *
      * @param id   - {@link EventDto} instance id which will be deleted.
      */
-    void delete(Long id);
+    void delete(Long id, UserVO user);
 
     /**
      * Method for updating {@link EventDto} instance.
