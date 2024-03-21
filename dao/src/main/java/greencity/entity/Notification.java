@@ -17,8 +17,10 @@ import static java.time.LocalDateTime.*;
 @Getter
 @Setter
 @Entity
-@Table(name = "notification")
+@Table(name = "notification",indexes =
+        @Index(name = "IX_notification_receiver_id",columnList = "receiver_id"))
 @Builder
+
 public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,7 +36,7 @@ public class Notification {
     @Column(nullable = false, name = "expire_at")
     private LocalDateTime expireAt = now().plusDays(AppConstant.NOTIFIC_ACTIVE_DAYS_TIME);
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(nullable = false, name = "receiver_id")
     private User receiver;
 
