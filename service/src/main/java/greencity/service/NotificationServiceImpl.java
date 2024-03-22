@@ -14,6 +14,7 @@ import greencity.repository.NotificationRepo;
 import greencity.repository.NotificationTranslationRepo;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -35,17 +36,27 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<NotificationDto> getAllNotifications(String userEmail, String lang) {
-        return getPageableNotifications(userEmail, lang, Pageable.unpaged()).getPage();
+        var translations = getNotificationTranslations(userEmail, lang, Pageable.unpaged());
+        return getPageableNotifications(translations).getPage();
     }
+
+    private Page<NotificationTranslation> getNotificationTranslations(String userEmail, String lang, Pageable pageable) {
+        return translationRepo.findAllNotification(userEmail, lang, pageable);
+    }
+
 
     @Override
-    public List<NotificationDto> getLatestNotifications(String userEmail, String lang) {
-        return getPageableNotifications(userEmail, lang, getLatestPageable()).getPage();
+    public List<NotificationDto> getLatestUnreadNotifications(String userEmail, String lang) {
+        var translations = getUnreadNotificationTranslations(userEmail, lang, getLatestPageable());
+        return getPageableNotifications(translations).getPage();
     }
 
-    private PageableAdvancedDto<NotificationDto> getPageableNotifications(String userEmail, String lang,
-        Pageable pageable) {
-        var translations = translationRepo.findAllNotification(userEmail, lang, pageable);
+    private Page<NotificationTranslation> getUnreadNotificationTranslations(String userEmail, String lang, Pageable pageable) {
+        return translationRepo.findAllUnreadNotification(userEmail, lang, pageable);
+    }
+
+
+    private PageableAdvancedDto<NotificationDto> getPageableNotifications(Page<NotificationTranslation> translations) {
         var notificationDtos = mapToNotificationDtos(translations.getContent());
 
         return PageableAdvancedBuilder.getPageableAdvanced(notificationDtos, translations);
@@ -61,6 +72,7 @@ public class NotificationServiceImpl implements NotificationService {
         return PageRequest.ofSize(AppConstant.LATEST_NOTIFICATION_SIZE)
             .withSort(Sort.by(AppConstant.LATEST_NOTIFICATION_SORT_FIELD).descending());
     }
+
 
     @Override
     @Transactional

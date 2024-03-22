@@ -13,4 +13,10 @@ public interface NotificationTranslationRepo extends JpaRepository<NotificationT
         "WHERE r.email=?1 " +
         "AND nt.language.code=?2")
     Page<NotificationTranslation> findAllNotification(String userEmail, String language, Pageable pageable);
+
+    @Query("SELECT nt FROM NotificationTranslation nt " +
+        "JOIN nt.notification n JOIN n.receiver r " +
+        "WHERE r.email=?1 " +
+        "AND nt.language.code=?2 AND n.status ='UNREAD'")
+    Page<NotificationTranslation> findAllUnreadNotification(String userEmail, String language, Pageable pageable);
 }
