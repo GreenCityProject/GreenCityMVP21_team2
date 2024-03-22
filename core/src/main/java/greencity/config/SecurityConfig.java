@@ -253,6 +253,8 @@ public class SecurityConfig {
                                 USER_CUSTOM_SHOPPING_LIST_ITEMS,
                                 USER_SHOPPING_LIST + "/user-shopping-list-items")
                         .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
+                        .requestMatchers("/notifications/**")
+                        .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
                         .requestMatchers(HttpMethod.GET,
                                 "/newsSubscriber",
                                 "/comments",
