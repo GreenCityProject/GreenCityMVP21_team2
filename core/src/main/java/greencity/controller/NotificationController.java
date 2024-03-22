@@ -25,7 +25,7 @@ public class NotificationController {
 
     @GetMapping("/latest")
     public List<NotificationDto> getLatestNotifications(@CurrentUser UserVO userVO, @ValidLanguage Locale locale){
-        return notificationService.getLatestNotifications(userVO.getEmail(), locale.getLanguage());
+        return notificationService.getLatestUnreadNotifications(userVO.getEmail(), locale.getLanguage());
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -33,5 +33,7 @@ public class NotificationController {
     public void getLatestNotifications(@CurrentUser UserVO userVO, @PathVariable Long id){
         notificationService.removeNotificationById(userVO,id);
     }
+
+
 
 }
