@@ -20,6 +20,9 @@ public final class AppConstant {
         "https://csb10032000a548f571.blob.core.windows.net/allfiles/8f09887c-2fbf-4ee1-95fc-6763a1873b93EventDefaultImage.png";
     public static final long NOTIFIC_ACTIVE_DAYS_TIME = 10;
 
+    public static final int LATEST_NOTIFICATION_SIZE = 3;
+    public static final String LATEST_NOTIFICATION_SORT_FIELD = "notification.createdAt";
+
     private AppConstant() {
     }
 }
