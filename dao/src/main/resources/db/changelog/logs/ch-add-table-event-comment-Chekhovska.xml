@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="createTableEventCommentChekhovska1" author="Maryna Chekhovska">
+        <createTable tableName="event_comment">
+            <column name="id" autoIncrement="true" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="created_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="text" type="VARCHAR(63206)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="author_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_event_comments_users" references="users (id)"/>
+            </column>
+            <column name="event_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_event_comments_events" references="events (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="event_comment"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="changeSetEventCommentUsersLikedChekhovska1" author="Maryna Chekhovska">
+        <createTable tableName="event_comment_users_liked">
+            <column name="event_comment_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_event_comment_liked_id" references="event_comment (id)"/>
+            </column>
+            <column name="users_liked_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_event_comment_users_liked" references="users (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="event_comment_users_liked"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

@@ -1,11 +1,8 @@
-package greencity.dto.events;
+package greencity.dto.eventscomment;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,14 +13,11 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode
 public class EventCommentDto {
 
-    @NotEmpty
-    @NotNull
-    @Min(1)
     private Long id;
 
     private EventCommentAuthorDto author;
 
-    private LocalDateTime createdDate;
+    private ZonedDateTime createdDate;
 
     private Boolean currentUserLiked;
 

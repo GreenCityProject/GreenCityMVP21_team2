@@ -104,6 +104,7 @@
     <include file="db/changelog/logs/ch-add-eco_news-Boiarchuk.xml"/>
 <!--    <include file="db/changelog/logs/ch-add-table-events-Bohonko.xml"/>-->
     <include file="db/changelog/logs/ch-add-table-events-Chekhovska.xml"/>
+    <include file="db/changelog/logs/ch-add-table-event-comment-Chekhovska.xml"/>
     <include file="db/changelog/logs/ch-insert-into-languages-Kozak.xml"/>
     <include file="db/changelog/logs/ch-insert-into-categories-Kozak.xml"/>
     <include file="db/changelog/logs/ch-insert-into-fact-of-the-day-Kozak.xml"/>
