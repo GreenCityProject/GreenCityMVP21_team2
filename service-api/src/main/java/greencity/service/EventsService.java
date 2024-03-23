@@ -2,6 +2,7 @@ package greencity.service;
 
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.events.AddEventDtoRequest;
+import greencity.dto.events.EventAttenderDto;
 import greencity.dto.events.EventDto;
 import greencity.dto.events.EventVO;
 import greencity.dto.user.UserVO;
@@ -26,7 +27,7 @@ public interface EventsService {
      * @param page parameters of to search.
      * @return PageableDto of {@link EventDto} instances.
      */
-    PageableAdvancedDto<EventDto> findAll(Pageable page);
+    PageableAdvancedDto<EventDto> findAll(Pageable page, Long userId);
 
     /**
      * Method for getting all events by page.
@@ -69,7 +70,47 @@ public interface EventsService {
      * @param id {@link EventDto} instance id.
      * @return {@link EventDto} instance.
      */
-    EventDto findEventById(Long id);
+    EventDto findEventById(Long id, Long userId);
+
+    /**
+     * Method for getting all {@link EventDto} attenders.
+     *
+     * @param id {@link EventDto} instance id.
+     * @return list of {@link EventAttenderDto} instance.
+     */
+    List<EventAttenderDto> findAllEventAttenders(Long id);
+
+    /**
+     * Method for adding an attender to the {@link EventDto}.
+     *
+     * @param id   - {@link EventDto} instance id.
+     * @param user for adding an attender to event.
+     */
+    void addAttender (Long id, UserVO user);
+
+    /**
+     * Method for adding an {@link EventDto} to favorites.
+     *
+     * @param id   - {@link EventDto} instance id.
+     * @param user for adding an event to favorites.
+     */
+    void addToFavorites (Long id, UserVO user);
+
+    /**
+     * Method for removing an attender from the {@link EventDto}.
+     *
+     * @param id   - {@link EventDto} instance id.
+     * @param user for removing an attender to event.
+     */
+    void removeAttender (Long id, UserVO user);
+
+    /**
+     * Method for removing an {@link EventDto} from favorites.
+     *
+     * @param id   - {@link EventDto} instance id.
+     * @param user for removing an event from favorites.
+     */
+    void removeFromFavorites (Long id, UserVO user);
 
     /**
      * Method for deleting the {@link EventDto} instance by its id.
@@ -81,15 +122,8 @@ public interface EventsService {
     /**
      * Method for updating {@link EventDto} instance.
      *
-     * @param {@link EventDto}.
-     * @return instance of {@link EventDto};=.
+     * @param eventDto - {@link EventDto} instance.
+     * @return instance of {@link EventDto}.
      */
-    EventDto update(EventDto eventDto, List<MultipartFile> images, Long userId);
-
-    /**
-     * Method for rating the {@link EventDto} instance by its id.
-     *
-     * @param id   - {@link EventDto} instance id which will be rate.
-     */
-    void rate(Long id, int grade);
+    EventDto update(EventDto eventDto, List<MultipartFile> images, UserVO user);
 }

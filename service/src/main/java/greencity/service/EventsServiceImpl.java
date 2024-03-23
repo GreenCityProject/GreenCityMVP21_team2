@@ -1,6 +1,5 @@
 package greencity.service;
 
-import greencity.client.RestClient;
 import greencity.constant.ErrorMessage;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.events.*;
@@ -14,7 +13,10 @@ import greencity.enums.TagType;
 import greencity.exception.exceptions.BadRequestException;
 import greencity.exception.exceptions.NotFoundException;
 import greencity.exception.exceptions.NotSavedException;
+import greencity.repository.EventDateLocationsRepo;
+import greencity.repository.EventsImagesRepo;
 import greencity.repository.EventsRepo;
+import greencity.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.EnableCaching;
@@ -25,7 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,20 +38,26 @@ import java.util.stream.Collectors;
 public class EventsServiceImpl implements EventsService {
 
     private final EventsRepo eventsRepo;
-    private final RestClient restClient;
+    private final EventDateLocationsRepo eventDateLocationsRepo;
+    private final EventsImagesRepo eventsImagesRepo;
+    private final UserRepo userRepo;
     private final ModelMapper modelMapper;
     private final TagsService tagService;
     private final FileService fileService;
+    private ZonedDateTime currentDate = ZonedDateTime.now();
+    private int maxImagesListSize = 6;
+    private int maxDateLocationListSize = 7;
 
     @Override
     public EventDto save(AddEventDtoRequest addEventDtoRequest, List<MultipartFile> images, Long userId) {
+        List<EventDateLocationDto> eventDateLocationDtos = addEventDtoRequest.getDatesLocations();
+        checkEvent(eventDateLocationDtos, images);
         EventDto eventsDto = modelMapper.map(addEventDtoRequest, EventDto.class);
 
-        User user = modelMapper.map(restClient.findById(userId), User.class);
+        User user = userRepo.getById(userId);
         eventsDto.setOrganizer(modelMapper.map(user, EventAuthorDto.class));
 
-        ZonedDateTime date = ZonedDateTime.now();
-        eventsDto.setCreationDate(date.toString());
+        eventsDto.setCreationDate(currentDate.toString());
 
         List<TagVO> tagVOS = tagService.findTagsByNamesAndType(
                 addEventDtoRequest.getTags(), TagType.EVENT);
@@ -58,7 +68,7 @@ public class EventsServiceImpl implements EventsService {
             eventsDto.setOpen(true);
         }
         setImagesInEventDto(eventsDto, images);
-        eventsDto.setDates(addEventDtoRequest.getDatesLocations());
+        eventsDto.setDates(eventDateLocationDtos);
         Events events = modelMapper.map(eventsDto, Events.class);
         Events finalEvent = converterEventDtoToEvent(eventsDto, events);
         try {
@@ -70,30 +80,34 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
-    public PageableAdvancedDto<EventDto> findAll(Pageable page) {
+    public PageableAdvancedDto<EventDto> findAll(Pageable page, Long userId) {
+        User user = userRepo.getById(userId);
         Page<Events> pages = eventsRepo.findAllByOrderByCreationDateDesc(page);
-        return buildPageableAdvancedDtoByEventDto(pages);
+        return buildPageableAdvancedDtoByEventDto(pages, user);
 
     }
 
     @Override
-    public PageableAdvancedDto<EventDto> findAllEventsCreatedByUser(Pageable page, UserVO user) {
-        Page<Events> pages = eventsRepo.findAllByOrganizerOrderByCreationDateDesc(modelMapper.map(user, User.class), page);
-        return buildPageableAdvancedDtoByEventDto(pages);
+    public PageableAdvancedDto<EventDto> findAllEventsCreatedByUser(Pageable page, UserVO userVO) {
+        User user = userRepo.getById(userVO.getId());
+        Page<Events> pages = eventsRepo.findAllByOrganizerOrderByCreationDateDesc(user, page);
+        return buildPageableAdvancedDtoByEventDto(pages, user);
     }
 
     @Override
-    public  PageableAdvancedDto<EventDto> findAllRelatedToUserEvents(UserVO user, Pageable page){
+    public  PageableAdvancedDto<EventDto> findAllRelatedToUserEvents(UserVO userVO, Pageable page){
+        User user = userRepo.getById(userVO.getId());
         Page<Events> pages = eventsRepo.findAllByOrganizerOrEventAttenderOrderByCreationDateDesc(
                 user.getId(), page);
-        return buildPageableAdvancedDtoByEventDto(pages);
+        return buildPageableAdvancedDtoByEventDto(pages, user);
     }
 
     @Override
-    public PageableAdvancedDto<EventDto> findAllUserEvents(UserVO user, Pageable page){
+    public PageableAdvancedDto<EventDto> findAllUserEvents(UserVO userVO, Pageable page){
+        User user = userRepo.getById(userVO.getId());
         Page<Events> pages = eventsRepo.findAllByEventAttenderOrderByCreationDateDesc(
                 user.getId(), page);
-        return buildPageableAdvancedDtoByEventDto(pages);
+        return buildPageableAdvancedDtoByEventDto(pages, user);
     }
 
     @Override
@@ -103,9 +117,10 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
-    public EventDto findEventById(Long id) {
+    public EventDto findEventById(Long id, Long userId) {
         Events events = eventsRepo.findById(id).orElseThrow(() -> new NotFoundException(ErrorMessage.EVENTS_NOT_FOUND_BY_ID + id));
-        return converterEventToEventDto(events);
+        User user = userRepo.getById(userId);
+        return converterEventToEventDto(events, user);
     }
 
     @Override
@@ -118,15 +133,22 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
-    public EventDto update(EventDto eventDto, List<MultipartFile> images, Long userId) {
+    public EventDto update(EventDto eventDto, List<MultipartFile> images,  UserVO user) {
+        if (user.getRole() != Role.ROLE_ADMIN && !user.getId().equals(eventDto.getOrganizer().getId())) {
+            throw new BadRequestException(ErrorMessage.USER_HAS_NO_PERMISSION);
+        }
+        checkEvent(eventDto.getDates(), images);
+        Long eventId = eventDto.getId();
+        eventDateLocationsRepo.deleteAllEventDateLocationsByEventId(eventId);
+        eventsImagesRepo.deleteAllEventsImagesByEventId(eventId);
         setImagesInEventDto(eventDto, images);
-        Events events = modelMapper.map(findById(eventDto.getId()), Events.class);
+        Events events = eventsRepo.findById(eventId).get();
         Events finalEvent = converterEventDtoToEvent(eventDto, events);
-        Events eventForTag = modelMapper.map(eventDto, Events.class);
-
-        finalEvent.setTags(eventForTag.getTags());
-        finalEvent.setOpen(eventForTag.getOpen());
-
+        finalEvent.setTitle(eventDto.getTitle());
+        finalEvent.setTitleImage(eventDto.getTitleImage());
+        finalEvent.setDescription(eventDto.getDescription());
+        finalEvent.setTags(events.getTags());
+        finalEvent.setOpen(events.getOpen());
         try {
             eventsRepo.save(finalEvent);
         } catch (DataIntegrityViolationException e) {
@@ -136,8 +158,65 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
-    public void rate(Long id, int grade) {
+    public void addAttender (Long id, UserVO userVO){
+        Events event = eventsRepo.findById(id).orElseThrow(() -> new NotFoundException(ErrorMessage.EVENTS_NOT_FOUND_BY_ID + id));
+        User user = userRepo.getById(userVO.getId());
+        Set<User> userSet = new HashSet<>(event.getEventAttender());
+        userSet.add(user);
+        event.setEventAttender(userSet);
+        try {
+            eventsRepo.save(event);
+        } catch (DataIntegrityViolationException e) {
+            throw new NotSavedException(ErrorMessage.EVENTS_NOT_SAVED);
+        }
+    }
 
+    @Override
+    public void addToFavorites (Long id, UserVO userVO){
+        Events event = eventsRepo.findById(id).orElseThrow(() -> new NotFoundException(ErrorMessage.EVENTS_NOT_FOUND_BY_ID + id));
+        User user = userRepo.getById(userVO.getId());
+        Set<User> userSet = new HashSet<>(event.getEventsFollowers());
+        userSet.add(user);
+        event.setEventsFollowers(userSet);
+        try {
+            eventsRepo.save(event);
+        } catch (DataIntegrityViolationException e) {
+            throw new NotSavedException(ErrorMessage.EVENTS_NOT_SAVED);
+        }
+    }
+
+    @Override
+    public void removeAttender (Long id, UserVO userVO){
+        Events event = eventsRepo.findById(id).orElseThrow(() -> new NotFoundException(ErrorMessage.EVENTS_NOT_FOUND_BY_ID + id));
+        User user = userRepo.getById(userVO.getId());
+        Set<User> userSet = new HashSet<>(event.getEventAttender());
+        userSet.remove(user);
+        event.setEventAttender(userSet);
+        try {
+            eventsRepo.save(event);
+        } catch (DataIntegrityViolationException e) {
+            throw new NotSavedException(ErrorMessage.EVENTS_NOT_SAVED);
+        }
+    }
+
+    @Override
+    public void removeFromFavorites (Long id, UserVO userVO){
+        Events event = eventsRepo.findById(id).orElseThrow(() -> new NotFoundException(ErrorMessage.EVENTS_NOT_FOUND_BY_ID + id));
+        User user = userRepo.getById(userVO.getId());
+        Set<User> userSet = new HashSet<>(event.getEventsFollowers());
+        userSet.remove(user);
+        event.setEventsFollowers(userSet);
+        try {
+            eventsRepo.save(event);
+        } catch (DataIntegrityViolationException e) {
+            throw new NotSavedException(ErrorMessage.EVENTS_NOT_SAVED);
+        }
+    }
+
+    @Override
+    public List<EventAttenderDto> findAllEventAttenders(Long id){
+        Events event = eventsRepo.findById(id).orElseThrow(() -> new NotFoundException(ErrorMessage.EVENTS_NOT_FOUND_BY_ID + id));
+        return event.getEventAttender().stream().map(user -> modelMapper.map(user, EventAttenderDto.class)).toList();
     }
 
     private String extractFromTagVONameInLanguage (List<TagVO> tagVOS, String language) {
@@ -171,21 +250,26 @@ public class EventsServiceImpl implements EventsService {
                         .build())
                 .collect(Collectors.toList());
     }
-    private List<EventDateLocationDto> converterListEventDateLocationToListEventDateLocationDto
-            (List<EventDateLocation> eventDateLocations){
+
+    private List<EventDateLocationDto> converterListEventDateLocationToListEventDateLocationDto(List<EventDateLocation> eventDateLocations){
         return eventDateLocations.stream()
-                .map(eventDateLocation -> EventDateLocationDto.builder()
-                        .id(eventDateLocation.getId())
-                        .startDate(eventDateLocation.getStartDate())
-                        .finishDate(eventDateLocation.getFinishDate())
-                        .onlineLink(eventDateLocation.getOnlineLink())
-                        .coordinates(AddressDto.builder()
-                                .latitude(eventDateLocation.getLatitude())
-                                .longitude(eventDateLocation.getLongitude())
-                                .build())
-                        .build())
+                .map(this::convertToEventDateLocationDto)
                 .collect(Collectors.toList());
     }
+
+    private EventDateLocationDto convertToEventDateLocationDto(EventDateLocation eventDateLocation) {
+        return EventDateLocationDto.builder()
+                .id(eventDateLocation.getId())
+                .startDate(eventDateLocation.getStartDate())
+                .finishDate(eventDateLocation.getFinishDate())
+                .onlineLink(eventDateLocation.getOnlineLink())
+                .coordinates(AddressDto.builder()
+                        .latitude(eventDateLocation.getLatitude())
+                        .longitude(eventDateLocation.getLongitude())
+                        .build())
+                .build();
+    }
+
     private List<EventsImages> converterListStringToListEventsImages (List<String> list, Events events){
         if( list != null) {
             return list.stream()
@@ -211,27 +295,29 @@ public class EventsServiceImpl implements EventsService {
         }
     }
 
-    private Events converterEventDtoToEvent (EventDto eventDto, Events events){
-        events.setCreationDate(ZonedDateTime.parse(eventDto.getCreationDate()));
-        events.setDatesLocations(converterListEventDateLocationDtoToListEventDateLocation(
-                eventDto.getDates(), events));
-        events.setEventsImages(converterListStringToListEventsImages(eventDto.getAdditionalImages(), events));
-        return events;
+    private Events converterEventDtoToEvent (EventDto eventDto, Events event){
+        event.setCreationDate(ZonedDateTime.parse(eventDto.getCreationDate()));
+        event.setDatesLocations(converterListEventDateLocationDtoToListEventDateLocation(
+                eventDto.getDates(), event));
+        event.setEventsImages(converterListStringToListEventsImages(eventDto.getAdditionalImages(), event));
+        return event;
     }
 
-    private EventDto converterEventToEventDto (Events events){
-        EventDto eventDto = modelMapper.map(events, EventDto.class);
-        eventDto.setAdditionalImages(events.getEventsImages().stream().map(EventsImages::getLink).collect(Collectors.toList()));
-        List<TagVO> tagVOS = events.getTags().stream().map(event ->  tagService.findById(
-                event.getId())).collect(Collectors.toList());
+    private EventDto converterEventToEventDto (Events event, User user){
+        EventDto eventDto = modelMapper.map(event, EventDto.class);
+        eventDto.setAdditionalImages(event.getEventsImages().stream().map(EventsImages::getLink).collect(Collectors.toList()));
+        List<TagVO> tagVOS = event.getTags().stream().map(tag ->  tagService.findById(
+                tag.getId())).collect(Collectors.toList());
         eventDto.setTags(converterListTagVOToListTagUaEnDto(tagVOS));
-        eventDto.setDates(converterListEventDateLocationToListEventDateLocationDto(events.getDatesLocations()));
+        eventDto.setDates(converterListEventDateLocationToListEventDateLocationDto(event.getDatesLocations()));
+        eventDto.setIsSubscribed(event.getEventAttender().contains(user));
+        eventDto.setIsFavorite(event.getEventsFollowers().contains(user));
         return eventDto;
     }
 
-    private PageableAdvancedDto<EventDto> buildPageableAdvancedDtoByEventDto(Page<Events> eventsPage) {
+    private PageableAdvancedDto<EventDto> buildPageableAdvancedDtoByEventDto(Page<Events> eventsPage, User user) {
         List<EventDto> eventsDtos = eventsPage.stream()
-                .map(this::converterEventToEventDto)
+                .map(event -> converterEventToEventDto(event, user))
                 .collect(Collectors.toList());
 
         return new PageableAdvancedDto<>(
@@ -244,5 +330,14 @@ public class EventsServiceImpl implements EventsService {
                 eventsPage.hasNext(),
                 eventsPage.isFirst(),
                 eventsPage.isLast());
+    }
+
+    private void checkEvent (List<EventDateLocationDto> eventDateLocationDtos, List<MultipartFile> images){
+        if (eventDateLocationDtos.stream().anyMatch(eventDateLocationDto -> eventDateLocationDto.getStartDate().isBefore(currentDate))){
+            throw new NotSavedException(ErrorMessage.EVENT_DATE_GREATER_CURRENT_DATE);
+        }
+        if (((images!= null)&&(images.size() > maxImagesListSize)) || (eventDateLocationDtos.size() > maxDateLocationListSize)){
+            throw new NotSavedException(ErrorMessage.EVENTS_NOT_SAVED);
+        }
     }
 }

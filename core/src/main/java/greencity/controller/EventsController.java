@@ -5,11 +5,10 @@ import greencity.constant.HttpStatuses;
 import greencity.constant.SwaggerExampleModel;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.events.AddEventDtoRequest;
+import greencity.dto.events.EventAttenderDto;
 import greencity.dto.events.EventDto;
 import greencity.dto.user.UserVO;
 import greencity.service.EventsService;
-import greencity.service.FileService;
-import greencity.service.TagsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,9 +33,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventsController {
     private final EventsService eventsService;
-    private final TagsService tagService;
-    private final FileService fileService;
-
 
     /**
      * Method for getting all events.
@@ -51,9 +47,10 @@ public class EventsController {
     })
     @ApiPageable
     @GetMapping("")
-    public ResponseEntity<PageableAdvancedDto<EventDto>> findAll(@Parameter(hidden = true) Pageable page) {
+    public ResponseEntity<PageableAdvancedDto<EventDto>> findAll(@Parameter(hidden = true) Pageable page,
+            @Parameter(hidden = true) @CurrentUser UserVO user) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(eventsService.findAll(page));
+                .body(eventsService.findAll(page, user.getId()));
     }
 
     /**
@@ -117,6 +114,25 @@ public class EventsController {
     }
 
     /**
+     * Method for getting all {@link EventDto} attenders.
+     *
+     * @return list of {@link EventAttenderDto} instance.
+     * @author
+     */
+    @Operation(summary = "Get all event attenders.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @ApiPageable
+    @GetMapping("/getAllSubscribers/{eventId}")
+    public ResponseEntity<List<EventAttenderDto>> getAllEventSubscribers(@PathVariable Long eventId){
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(eventsService.findAllEventAttenders(eventId));
+    }
+
+    /**
      * Method for getting event by id.
      *
      * @return {@link EventDto} instance.
@@ -130,9 +146,10 @@ public class EventsController {
     })
     @ApiPageable
     @GetMapping("/event/{eventId}")
-    public ResponseEntity<EventDto> getEvent (@PathVariable Long eventId){
+    public ResponseEntity<EventDto> getEvent (@PathVariable Long eventId,
+                                              @Parameter(hidden = true) @CurrentUser UserVO user){
         return ResponseEntity.status(HttpStatus.OK)
-                .body(eventsService.findEventById(eventId));
+                .body(eventsService.findEventById(eventId, user.getId()));
     }
 
     /**
@@ -159,6 +176,43 @@ public class EventsController {
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 eventsService.save(addEventDtoRequest, images, user.getId()));
     }
+
+    /**
+     * Method for adding an attender to the {@link EventDto}.
+     *
+     */
+    @Operation(summary = "Add an attender to the event.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @PostMapping("/addAttender/{eventId}")
+    public ResponseEntity<Object> addAttender (@PathVariable Long eventId,
+                                               @Parameter(hidden = true) @CurrentUser UserVO user){
+        eventsService.addAttender(eventId, user);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    /**
+     * Method for adding an {@link EventDto} to favorites.
+     *
+     */
+    @Operation(summary = "Add an event to favorites.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @PostMapping("/addToFavorites/{eventId}")
+    public ResponseEntity<Object> addToFavorites (@PathVariable Long eventId,
+                                               @Parameter(hidden = true) @CurrentUser UserVO user){
+        eventsService.addToFavorites(eventId, user);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
     /**
      * Method for updating {@link EventDto}.
      *
@@ -183,7 +237,7 @@ public class EventsController {
                     required = false) List<MultipartFile> images,
             @Parameter(hidden = true) @CurrentUser UserVO user) {
         return ResponseEntity.status(HttpStatus.OK).body(
-                eventsService.update(eventDto, images, user.getId()));
+                eventsService.update(eventDto, images, user));
     }
 
     /**
@@ -201,6 +255,44 @@ public class EventsController {
     public ResponseEntity<Object> delete(@PathVariable Long eventId,
                                          @Parameter(hidden = true) @CurrentUser UserVO user) {
         eventsService.delete(eventId, user);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    /**
+     * Method for removing an attender from the {@link EventDto}.
+     *
+     *
+     */
+    @Operation(summary = "Remove an attender from the event.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @DeleteMapping("/removeAttender/{eventId}")
+    public ResponseEntity<Object> removeAttender(@PathVariable Long eventId,
+                                         @Parameter(hidden = true) @CurrentUser UserVO user) {
+        eventsService.removeAttender(eventId, user);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    /**
+     * Method for removing an {@link EventDto} from favorites.
+     *
+     *
+     */
+    @Operation(summary = "Remove an event from favorites.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @DeleteMapping("/removeFromFavorites/{eventId}")
+    public ResponseEntity<Object> removeFromFavorites(@PathVariable Long eventId,
+                                                 @Parameter(hidden = true) @CurrentUser UserVO user) {
+        eventsService.removeFromFavorites(eventId, user);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

@@ -4,7 +4,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="Chekhovska-2" author="Maryna Chekhovska">
+    <changeSet id="Chekhovska-3" author="Maryna Chekhovska">
         <createTable tableName="events">
             <column name="id" autoIncrement="true" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -28,7 +28,7 @@
             <dropTable tableName="events"/>
         </rollback>
     </changeSet>
-    <changeSet id="createTableEventDateLocations1" author="Maryna Chekhovska">
+    <changeSet id="createTableEventDateLocations2" author="Maryna Chekhovska">
         <createTable tableName="event_date_locations">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -43,7 +43,7 @@
             <column name="longitude"  type="DOUBLE"/>
             <column name="online_link" type="VARCHAR"/>
             <column name="event_id"  type="BIGINT">
-                <constraints foreignKeyName="FK_event_date_locations_event"
+                <constraints foreignKeyName="FK_event_date_locations"
                              references="events (id)"/>
             </column>
         </createTable>
@@ -51,7 +51,7 @@
             <dropTable tableName="event_date_locations"/>
         </rollback>
     </changeSet>
-    <changeSet id="changeSetEventIAttenders" author="Maryna Chekhovska">
+    <changeSet id="changeSetEventAttenders1" author="Maryna Chekhovska">
         <createTable tableName="events_attenders">
             <column name="event_id"  type="BIGINT">
                 <constraints foreignKeyName="FK_event_attender_id" references="events (id)"/>
@@ -64,7 +64,20 @@
             <dropTable tableName="events_attenders"/>
         </rollback>
     </changeSet>
-    <changeSet id="changeSetEventTags" author="Maryna Chekhovska">
+    <changeSet id="changeSetEventFollowers" author="Maryna Chekhovska">
+        <createTable tableName="events_followers">
+            <column name="event_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_event_follower_id" references="events (id)"/>
+            </column>
+            <column name="user_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_user_events_followers" references="users (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="events_followers"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="changeSetEventTags1" author="Maryna Chekhovska">
         <createTable tableName="events_tags">
             <column name="event_id"  type="BIGINT">
                 <constraints foreignKeyName="FK_event_tags_id" references="events (id)"/>
@@ -77,7 +90,7 @@
             <dropTable tableName="events_tags"/>
         </rollback>
     </changeSet>
-    <changeSet id="changeSetEventImagesChekhovska" author="Maryna Chekhovska">
+    <changeSet id="changeSetEventImagesChekhovska1" author="Maryna Chekhovska">
         <createTable tableName="events_images">
             <column name="id" autoIncrement="true" type="BIGINT">
                 <constraints primaryKey="true"/>
