@@ -47,6 +47,8 @@ public class EventsServiceImpl implements EventsService {
     private ZonedDateTime currentDate = ZonedDateTime.now();
     private int maxImagesListSize = 6;
     private int maxDateLocationListSize = 7;
+    private String defaultImage = "https://csb10032000a548f571" +
+            ".blob.core.windows.net/allfiles/e95283db-3f71-4867-95cd-e28bf0a6afebillustration-earth.png";
 
     @Override
     public EventDto save(AddEventDtoRequest addEventDtoRequest, List<MultipartFile> images, Long userId) {
@@ -62,15 +64,15 @@ public class EventsServiceImpl implements EventsService {
         List<TagVO> tagVOS = tagService.findTagsByNamesAndType(
                 addEventDtoRequest.getTags(), TagType.EVENT);
 
-        eventsDto.setTags(converterListTagVOToListTagUaEnDto(tagVOS));
-
         if (eventsDto.getOpen() == null) {
             eventsDto.setOpen(true);
         }
         setImagesInEventDto(eventsDto, images);
-        eventsDto.setDates(eventDateLocationDtos);
+        eventsDto.setDatesLocations(eventDateLocationDtos);
         Events events = modelMapper.map(eventsDto, Events.class);
         Events finalEvent = converterEventDtoToEvent(eventsDto, events);
+        finalEvent.setCreationDate(ZonedDateTime.parse(eventsDto.getCreationDate()));
+        finalEvent.setTags(tagVOS.stream().map(tagVO -> modelMapper.map(tagVO, Tag.class)).toList());
         try {
             eventsRepo.save(finalEvent);
         } catch (DataIntegrityViolationException e) {
@@ -134,15 +136,15 @@ public class EventsServiceImpl implements EventsService {
 
     @Override
     public EventDto update(EventDto eventDto, List<MultipartFile> images,  UserVO user) {
-        if (user.getRole() != Role.ROLE_ADMIN && !user.getId().equals(eventDto.getOrganizer().getId())) {
+        Long eventId = eventDto.getId();
+        Events events = eventsRepo.findById(eventId).get();
+        if (user.getRole() != Role.ROLE_ADMIN && !user.getId().equals(events.getOrganizer().getId())) {
             throw new BadRequestException(ErrorMessage.USER_HAS_NO_PERMISSION);
         }
-        checkEvent(eventDto.getDates(), images);
-        Long eventId = eventDto.getId();
+        checkEvent(eventDto.getDatesLocations(), images);
         eventDateLocationsRepo.deleteAllEventDateLocationsByEventId(eventId);
         eventsImagesRepo.deleteAllEventsImagesByEventId(eventId);
         setImagesInEventDto(eventDto, images);
-        Events events = eventsRepo.findById(eventId).get();
         Events finalEvent = converterEventDtoToEvent(eventDto, events);
         finalEvent.setTitle(eventDto.getTitle());
         finalEvent.setTitleImage(eventDto.getTitleImage());
@@ -291,14 +293,13 @@ public class EventsServiceImpl implements EventsService {
                     .map(fileService::upload)
                     .collect(Collectors.toList()));
         } else {
-            eventDto.setTitleImage("some image");
+            eventDto.setTitleImage(defaultImage);
         }
     }
 
     private Events converterEventDtoToEvent (EventDto eventDto, Events event){
-        event.setCreationDate(ZonedDateTime.parse(eventDto.getCreationDate()));
         event.setDatesLocations(converterListEventDateLocationDtoToListEventDateLocation(
-                eventDto.getDates(), event));
+                eventDto.getDatesLocations(), event));
         event.setEventsImages(converterListStringToListEventsImages(eventDto.getAdditionalImages(), event));
         return event;
     }
@@ -308,8 +309,8 @@ public class EventsServiceImpl implements EventsService {
         eventDto.setAdditionalImages(event.getEventsImages().stream().map(EventsImages::getLink).collect(Collectors.toList()));
         List<TagVO> tagVOS = event.getTags().stream().map(tag ->  tagService.findById(
                 tag.getId())).collect(Collectors.toList());
-        eventDto.setTags(converterListTagVOToListTagUaEnDto(tagVOS));
-        eventDto.setDates(converterListEventDateLocationToListEventDateLocationDto(event.getDatesLocations()));
+        eventDto.setTags(converterListTagVOToListTagUaEnDto(tagVOS).stream().map(tagUaEnDto -> tagUaEnDto.getNameEn()).toList());
+        eventDto.setDatesLocations(converterListEventDateLocationToListEventDateLocationDto(event.getDatesLocations()));
         eventDto.setIsSubscribed(event.getEventAttender().contains(user));
         eventDto.setIsFavorite(event.getEventsFollowers().contains(user));
         return eventDto;

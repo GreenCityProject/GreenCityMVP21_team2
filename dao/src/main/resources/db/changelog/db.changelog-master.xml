@@ -162,7 +162,7 @@
     <include file="/db/changelog/logs/ch-drop-table-achievement-translation-Bokalo.xml"/>
     <include file="/db/changelog/logs/ch-drop-table-achievements-categories-Bokalo.xml"/>
     <include file="db/changelog/logs/ch-drop-all-employee-tables-Bokalo.xml"/>
-<!--    <include file="db/changelog/logs/ch-drop-all-events-tables-Bokalo.xml"/>-->
+    <include file="db/changelog/logs/ch-drop-all-events-tables-Bokalo.xml"/>
     <include file="db/changelog/logs/ch-drop-table-user-achievemets.xml"/>
     <include file="db/changelog/logs/ch-drop-all-positions-tables.xml"/>
     <include file="db/changelog/logs/ch-drop-all-advices-tables-Bokalo.xml"/>
