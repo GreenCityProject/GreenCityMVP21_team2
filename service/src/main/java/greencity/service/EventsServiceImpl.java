@@ -144,11 +144,16 @@ public class EventsServiceImpl implements EventsService {
         }
         checkEvent(eventDto.getDates(), images);
         eventDateLocationsRepo.deleteAllEventDateLocationsByEventId(eventId);
-        eventsImagesRepo.deleteAllEventsImagesByEventId(eventId);
+        eventDtoYoUpdate.getImagesToDelete().stream().forEach(link ->
+                eventsImagesRepo.deleteAllEventsImagesByEventIdAndLink(eventId, link));
         setImagesInEventDto(eventDto, images);
         Events finalEvent = converterEventDtoToEvent(eventDto, events);
         finalEvent.setTitle(eventDto.getTitle());
-        finalEvent.setTitleImage(eventDto.getTitleImage());
+        if(eventDtoYoUpdate.getImagesToDelete().contains(events.getTitleImage())) {
+            finalEvent.setTitleImage(eventDto.getTitleImage());
+        } else {
+            eventDto.setTitleImage(events.getTitleImage());
+        }
         finalEvent.setDescription(eventDto.getDescription());
         finalEvent.setTags(events.getTags());
         finalEvent.setOpen(events.getOpen());
@@ -263,6 +268,7 @@ public class EventsServiceImpl implements EventsService {
     private EventDateLocationDto convertToEventDateLocationDto(EventDateLocation eventDateLocation) {
         return EventDateLocationDto.builder()
                 .id(eventDateLocation.getId())
+                .event(modelMapper.map(eventDateLocation.getEvent(), EventDto.class))
                 .startDate(eventDateLocation.getStartDate())
                 .finishDate(eventDateLocation.getFinishDate())
                 .onlineLink(eventDateLocation.getOnlineLink())

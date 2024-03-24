@@ -17,7 +17,7 @@ public class EventDateLocationDto {
 
     private AddressDto coordinates;
 
-//    private EventDto event;
+    private EventDto event;
 
     private ZonedDateTime startDate;
 
