@@ -1,5 +1,10 @@
 package greencity.service;
 
+import static greencity.constant.ErrorMessage.*;
+import static greencity.enums.NotificationStatus.READ;
+import static greencity.enums.NotificationStatus.UNREAD;
+import static java.util.stream.Collectors.*;
+
 import greencity.builder.PageableAdvancedBuilder;
 import greencity.constant.AppConstant;
 import greencity.dto.PageableAdvancedDto;
@@ -7,6 +12,7 @@ import greencity.dto.notification.NotificationDto;
 import greencity.dto.user.UserVO;
 import greencity.entity.Notification;
 import greencity.entity.localization.NotificationTranslation;
+import greencity.enums.NotificationStatus;
 import greencity.enums.Role;
 import greencity.exception.exceptions.NotFoundException;
 import greencity.exception.exceptions.UserHasNoPermissionToAccessException;
@@ -23,9 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static greencity.constant.ErrorMessage.*;
-import static java.util.stream.Collectors.*;
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -41,7 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private Page<NotificationTranslation> getNotificationTranslations(String userEmail, String lang, Pageable pageable) {
-        return translationRepo.findAllNotification(userEmail, lang, pageable);
+        return translationRepo.findAll(userEmail, lang, pageable);
     }
 
 
@@ -52,7 +55,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private Page<NotificationTranslation> getUnreadNotificationTranslations(String userEmail, String lang, Pageable pageable) {
-        return translationRepo.findAllUnreadNotification(userEmail, lang, pageable);
+        return translationRepo.findAllWithUnreadStatus(userEmail, lang, pageable);
     }
 
 
@@ -64,8 +67,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     private List<NotificationDto> mapToNotificationDtos(List<NotificationTranslation> translations) {
         return translations.stream()
-            .map(t -> modelMapper.map(t, NotificationDto.class))
+            .map(this::map)
             .collect(toList());
+    }
+
+    private NotificationDto map(NotificationTranslation t) {
+        return modelMapper.map(t, NotificationDto.class);
     }
 
     private PageRequest getLatestPageable() {
@@ -76,27 +83,60 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public void removeNotificationById(UserVO userVO, Long id) {
-        var notification = getNotificationWithUser(id);
-
-        checkUserHasPermissionToAccess(userVO, notification);
+    public void removeNotificationById(UserVO user, Long id) {
+        var notification = getNotificationWithUserById(id);
+        checkUserHasPermissionToAccess(user, notification);
         removeNotification(notification);
     }
 
-    private Notification getNotificationWithUser(Long id) {
+    private Notification getNotificationWithUserById(Long id) {
         return notificationRepo.findByIdFetchUser(id)
                 .orElseThrow(() -> new NotFoundException(NOTIFICATION_NOT_FOUND_BY_ID + id));
-    }
-
-    private void checkUserHasPermissionToAccess(UserVO user, Notification notification) {
-        var receiverEmail = notification.getReceiver().getEmail();
-
-        if (!(user.getEmail().equals(receiverEmail)) || !(user.getRole().equals(Role.ROLE_ADMIN))) {
-            throw new UserHasNoPermissionToAccessException(USER_HAS_NO_PERMISSION);
-        }
     }
 
     private void removeNotification(Notification notification) {
         notificationRepo.delete(notification);
     }
+
+    @Override
+    @Transactional
+    public NotificationDto changeStatusToRead(Long id, UserVO user, String lang) {
+        var translation = getTranslationByNotificationIdAndLang(id,lang);
+        checkUserHasPermissionToAccess(user,translation.getNotification());
+
+        return changeStatus(translation, READ);
+    }
+
+    @Override
+    @Transactional
+    public NotificationDto changeStatusToUnread(Long id, UserVO user, String lang) {
+        var translation = getTranslationByNotificationIdAndLang(id,lang);
+        checkUserHasPermissionToAccess(user,translation.getNotification());
+
+        return changeStatus(translation, UNREAD);
+    }
+
+
+    private NotificationTranslation getTranslationByNotificationIdAndLang(Long id, String lang){
+        return translationRepo.findByNotificationIdAndLanguage(id,lang)
+                .orElseThrow(() -> new NotFoundException(NOTIFICATION_NOT_FOUND_BY_ID + id));
+    }
+
+    private NotificationDto changeStatus(NotificationTranslation translation, NotificationStatus status){
+        var notification = translation.getNotification();
+        notification.setStatus(status);
+        return map(translation);
+    }
+
+
+    private void checkUserHasPermissionToAccess(UserVO user, Notification notification) {
+        var receiverEmail = notification.getReceiver().getEmail();
+        if (!(user.getRole().equals(Role.ROLE_ADMIN)) || !(user.getEmail().equals(receiverEmail))) {
+            throw new UserHasNoPermissionToAccessException(USER_HAS_NO_PERMISSION);
+        }
+    }
+
 }
+
+
+

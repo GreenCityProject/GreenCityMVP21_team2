@@ -25,7 +25,7 @@ public class NotificationTranslation {
     @Column(nullable = false)
     private String content;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "notification_id",nullable = false)
     private Notification notification;
 }

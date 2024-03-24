@@ -10,5 +10,9 @@ public interface NotificationService {
 
     List<NotificationDto> getLatestUnreadNotifications(String userEmail, String lang);
 
-    void removeNotificationById(UserVO userVO, Long id);
+    void removeNotificationById(UserVO user, Long id);
+
+    NotificationDto changeStatusToRead(Long id, UserVO user, String lang);
+
+    NotificationDto changeStatusToUnread(Long id, UserVO user, String lang);
 }

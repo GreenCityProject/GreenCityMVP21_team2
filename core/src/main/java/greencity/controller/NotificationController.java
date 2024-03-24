@@ -7,6 +7,7 @@ import greencity.dto.user.UserVO;
 import greencity.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,10 +31,24 @@ public class NotificationController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
-    public void getLatestNotifications(@CurrentUser UserVO userVO, @PathVariable Long id){
+    public void removeNotification(@CurrentUser UserVO userVO, @PathVariable Long id){
         notificationService.removeNotificationById(userVO,id);
     }
 
 
+    @PutMapping("/{id}/read")
+    public ResponseEntity<?> changeNotificationStatusToRead(@CurrentUser UserVO user,
+                                                            @PathVariable Long id, @ValidLanguage Locale locale){
+        var notification = notificationService.changeStatusToRead(id,user, locale.getLanguage());
+        return ResponseEntity.ok(notification);
+    }
+
+
+    @PutMapping("/{id}/unread")
+    public ResponseEntity<?> getLatestNotifications(@CurrentUser UserVO user,
+                                                    @PathVariable Long id, @ValidLanguage Locale locale){
+        var notification = notificationService.changeStatusToUnread(id,user,locale.getLanguage());
+        return ResponseEntity.ok(notification);
+    }
 
 }
