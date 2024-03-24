@@ -1,6 +1,5 @@
 package greencity.dto.events;
 
-import greencity.dto.tag.TagUaEnDto;
 import lombok.*;
 
 import java.util.List;
@@ -9,11 +8,10 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = "organizer")
+@ToString
 @Builder
 @EqualsAndHashCode
-public class EventDto {
-
+public class EventDtoYoUpdate {
     private Long id;
 
     private EventAuthorDto organizer;
@@ -32,9 +30,11 @@ public class EventDto {
 
     private Boolean open;
 
-    private List<TagUaEnDto> tags;
+    private List<String> tags;
 
-    private List<EventDateLocationDto> dates;
+    private List<EventDateLocationDto> datesLocations;
 
     private List<String> additionalImages;
+
+    private List<String> imagesToDelete;
 }

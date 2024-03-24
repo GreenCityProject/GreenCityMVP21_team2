@@ -68,7 +68,7 @@ public class EventsServiceImpl implements EventsService {
             eventsDto.setOpen(true);
         }
         setImagesInEventDto(eventsDto, images);
-        eventsDto.setDatesLocations(eventDateLocationDtos);
+        eventsDto.setDates(eventDateLocationDtos);
         Events events = modelMapper.map(eventsDto, Events.class);
         Events finalEvent = converterEventDtoToEvent(eventsDto, events);
         finalEvent.setCreationDate(ZonedDateTime.parse(eventsDto.getCreationDate()));
@@ -135,13 +135,14 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
-    public EventDto update(EventDto eventDto, List<MultipartFile> images,  UserVO user) {
+    public EventDto update(EventDtoYoUpdate eventDtoYoUpdate, List<MultipartFile> images,  UserVO user) {
+        EventDto eventDto = converterEventDtoYoUpdateToEventDto(eventDtoYoUpdate);
         Long eventId = eventDto.getId();
         Events events = eventsRepo.findById(eventId).get();
         if (user.getRole() != Role.ROLE_ADMIN && !user.getId().equals(events.getOrganizer().getId())) {
             throw new BadRequestException(ErrorMessage.USER_HAS_NO_PERMISSION);
         }
-        checkEvent(eventDto.getDatesLocations(), images);
+        checkEvent(eventDto.getDates(), images);
         eventDateLocationsRepo.deleteAllEventDateLocationsByEventId(eventId);
         eventsImagesRepo.deleteAllEventsImagesByEventId(eventId);
         setImagesInEventDto(eventDto, images);
@@ -299,7 +300,7 @@ public class EventsServiceImpl implements EventsService {
 
     private Events converterEventDtoToEvent (EventDto eventDto, Events event){
         event.setDatesLocations(converterListEventDateLocationDtoToListEventDateLocation(
-                eventDto.getDatesLocations(), event));
+                eventDto.getDates(), event));
         event.setEventsImages(converterListStringToListEventsImages(eventDto.getAdditionalImages(), event));
         return event;
     }
@@ -309,11 +310,28 @@ public class EventsServiceImpl implements EventsService {
         eventDto.setAdditionalImages(event.getEventsImages().stream().map(EventsImages::getLink).collect(Collectors.toList()));
         List<TagVO> tagVOS = event.getTags().stream().map(tag ->  tagService.findById(
                 tag.getId())).collect(Collectors.toList());
-        eventDto.setTags(converterListTagVOToListTagUaEnDto(tagVOS).stream().map(tagUaEnDto -> tagUaEnDto.getNameEn()).toList());
-        eventDto.setDatesLocations(converterListEventDateLocationToListEventDateLocationDto(event.getDatesLocations()));
+        eventDto.setTags(converterListTagVOToListTagUaEnDto(tagVOS));
+        eventDto.setDates(converterListEventDateLocationToListEventDateLocationDto(event.getDatesLocations()));
         eventDto.setIsSubscribed(event.getEventAttender().contains(user));
         eventDto.setIsFavorite(event.getEventsFollowers().contains(user));
         return eventDto;
+    }
+
+    private EventDto converterEventDtoYoUpdateToEventDto (EventDtoYoUpdate eventDtoYoUpdate){
+        List<TagVO> tagVOS = tagService.findTagsByNamesAndType(
+                eventDtoYoUpdate.getTags(), TagType.EVENT);
+        return EventDto.builder()
+                .id(eventDtoYoUpdate.getId())
+                .title(eventDtoYoUpdate.getTitle())
+                .titleImage(eventDtoYoUpdate.getTitleImage())
+                .tags(converterListTagVOToListTagUaEnDto(tagVOS))
+                .organizer(eventDtoYoUpdate.getOrganizer())
+                .open(eventDtoYoUpdate.getOpen())
+                .description(eventDtoYoUpdate.getDescription())
+                .dates(eventDtoYoUpdate.getDatesLocations())
+                .creationDate(eventDtoYoUpdate.getCreationDate())
+                .additionalImages(eventDtoYoUpdate.getAdditionalImages())
+                .build();
     }
 
     private PageableAdvancedDto<EventDto> buildPageableAdvancedDtoByEventDto(Page<Events> eventsPage, User user) {

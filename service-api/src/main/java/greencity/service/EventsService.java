@@ -1,10 +1,7 @@
 package greencity.service;
 
 import greencity.dto.PageableAdvancedDto;
-import greencity.dto.events.AddEventDtoRequest;
-import greencity.dto.events.EventAttenderDto;
-import greencity.dto.events.EventDto;
-import greencity.dto.events.EventVO;
+import greencity.dto.events.*;
 import greencity.dto.user.UserVO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -125,5 +122,5 @@ public interface EventsService {
      * @param eventDto - {@link EventDto} instance.
      * @return instance of {@link EventDto}.
      */
-    EventDto update(EventDto eventDto, List<MultipartFile> images, UserVO user);
+    EventDto update(EventDtoYoUpdate eventDto, List<MultipartFile> images, UserVO user);
 }

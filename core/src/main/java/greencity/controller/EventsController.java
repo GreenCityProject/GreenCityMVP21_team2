@@ -7,6 +7,7 @@ import greencity.dto.PageableAdvancedDto;
 import greencity.dto.events.AddEventDtoRequest;
 import greencity.dto.events.EventAttenderDto;
 import greencity.dto.events.EventDto;
+import greencity.dto.events.EventDtoYoUpdate;
 import greencity.dto.user.UserVO;
 import greencity.service.EventsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -222,7 +223,7 @@ public class EventsController {
     @Operation(summary = "Update event")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
-                    content = @Content(schema = @Schema(implementation = EventDto.class))),
+                    content = @Content(schema = @Schema(implementation = EventDtoYoUpdate.class))),
             @ApiResponse(responseCode = "303", description = HttpStatuses.SEE_OTHER),
             @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
             @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
@@ -232,7 +233,7 @@ public class EventsController {
             MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<EventDto> update(
             @Parameter(description = SwaggerExampleModel.UPDATE_EVENT,
-                    required = true) @RequestPart EventDto eventDto,
+                    required = true) @RequestPart EventDtoYoUpdate eventDto,
             @Parameter(description = "Image of events") @Valid @RequestPart(
                     required = false) List<MultipartFile> images,
             @Parameter(hidden = true) @CurrentUser UserVO user) {
