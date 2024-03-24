@@ -88,10 +88,10 @@ public class NotificationServiceImpl implements NotificationService {
                 .orElseThrow(() -> new NotFoundException(NOTIFICATION_NOT_FOUND_BY_ID + id));
     }
 
-    private static void checkUserHasPermissionToAccess(UserVO userVO, Notification notification) {
+    private void checkUserHasPermissionToAccess(UserVO user, Notification notification) {
         var receiverEmail = notification.getReceiver().getEmail();
 
-        if (userVO.getRole().equals(Role.ROLE_ADMIN) || userVO.getEmail().equals(receiverEmail)) {
+        if (!(user.getEmail().equals(receiverEmail)) || !(user.getRole().equals(Role.ROLE_ADMIN))) {
             throw new UserHasNoPermissionToAccessException(USER_HAS_NO_PERMISSION);
         }
     }
