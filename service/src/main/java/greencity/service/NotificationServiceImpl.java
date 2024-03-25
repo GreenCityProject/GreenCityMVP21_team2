@@ -130,8 +130,9 @@ public class NotificationServiceImpl implements NotificationService {
 
 
     private void checkUserHasPermissionToAccess(UserVO user, Notification notification) {
-        var receiverEmail = notification.getReceiver().getEmail();
-        if (!(user.getRole().equals(Role.ROLE_ADMIN)) || !(user.getEmail().equals(receiverEmail))) {
+        var receiverId = notification.getReceiver().getId();
+
+        if ((!user.getRole().equals(Role.ROLE_ADMIN)) && (!user.getId().equals(receiverId))) {
             throw new UserHasNoPermissionToAccessException(USER_HAS_NO_PERMISSION);
         }
     }
