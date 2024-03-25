@@ -10,14 +10,17 @@ import greencity.constant.AppConstant;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.notification.NotificationDto;
 import greencity.dto.user.UserVO;
+import greencity.entity.Language;
 import greencity.entity.Notification;
 import greencity.entity.localization.NotificationTranslation;
 import greencity.enums.NotificationStatus;
 import greencity.enums.Role;
 import greencity.exception.exceptions.NotFoundException;
 import greencity.exception.exceptions.UserHasNoPermissionToAccessException;
+import greencity.repository.LanguageRepo;
 import greencity.repository.NotificationRepo;
 import greencity.repository.NotificationTranslationRepo;
+import greencity.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -27,6 +30,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -35,6 +39,8 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationTranslationRepo translationRepo;
     private final NotificationRepo notificationRepo;
+    private final LanguageRepo languageRepo;
+    private final UserRepo userRepo;
     private final ModelMapper modelMapper;
 
     @Override
@@ -116,6 +122,39 @@ public class NotificationServiceImpl implements NotificationService {
         return changeStatus(translation, UNREAD);
     }
 
+    @Override
+    @Transactional
+    public void createNotification(List <String> textList, UserVO user, Long autorId, String title){
+        Notification notification = Notification.builder()
+                        .receiver(userRepo.findById(autorId).get())
+                        .status(UNREAD)
+                        .createdAt(LocalDateTime.now())
+                        .expireAt(LocalDateTime.now().plusDays(1))
+                .build();
+        List <NotificationTranslation> notificationTranslationList = textList.stream()
+                .map(text-> createNotificationTranslation(text, notification, user, title)).toList();
+        notification.setTranslations(notificationTranslationList);
+        notificationRepo.save(notification);
+    }
+
+    private NotificationTranslation createNotificationTranslation(String text, Notification notification,
+                                                                  UserVO user, String title){
+        return NotificationTranslation.builder()
+                .content(user.getName() + text + title+ ".")
+                .language(languageDefinition(text))
+                .notification(notification)
+                .build();
+    }
+
+    private Language languageDefinition (String text){
+        if (text.matches("^[A-Za-z.,!?\\s']+$")) {
+            return languageRepo.findByCode("en").orElse(null);
+        } else if (text.matches("^[А-Яа-яієїґ'.,!?\\s-]+$")) {
+            return languageRepo.findByCode("ua").orElse(null);
+        } else {
+            return null;
+        }
+    }
 
     private NotificationTranslation getTranslationByNotificationIdAndLang(Long id, String lang){
         return translationRepo.findByNotificationIdAndLanguage(id,lang)
@@ -136,7 +175,6 @@ public class NotificationServiceImpl implements NotificationService {
             throw new UserHasNoPermissionToAccessException(USER_HAS_NO_PERMISSION);
         }
     }
-
 }
 
 
