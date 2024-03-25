@@ -1,5 +1,6 @@
 package greencity.service;
 
+import greencity.dto.econews.EcoNewsDto;
 import greencity.dto.notification.NotificationDto;
 import greencity.dto.user.UserVO;
 
@@ -15,4 +16,6 @@ public interface NotificationService {
     NotificationDto changeStatusToRead(Long id, UserVO user, String lang);
 
     NotificationDto changeStatusToUnread(Long id, UserVO user, String lang);
+
+    void createNotification (List<String> text, UserVO userVO, Long autorId, String title);
 }

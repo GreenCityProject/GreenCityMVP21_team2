@@ -11,6 +11,7 @@ import greencity.dto.user.UserVO;
 import greencity.exception.exceptions.NotFoundException;
 import greencity.service.EcoNewsService;
 import greencity.service.FileService;
+import greencity.service.NotificationService;
 import greencity.service.TagsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,6 +39,7 @@ import java.util.Locale;
 public class EcoNewsController {
     private final EcoNewsService ecoNewsService;
     private final TagsService tagService;
+    private final NotificationService notificationService;
     private final FileService fileService;
 
     /**
@@ -334,6 +336,11 @@ public class EcoNewsController {
     })
     @PostMapping("/like")
     public void like(@RequestParam("id") Long id, @Parameter(hidden = true) @CurrentUser UserVO user) {
+        Long autorId = ecoNewsService.getById(id).getAuthor().getId();
+        String title = ecoNewsService.getById(id).getTitle();
+        notificationService.createNotification(
+                List.of(" liked your news ",
+                        " вподобав Вашу новину "), user, autorId, title);
         ecoNewsService.like(user, id);
     }
 
