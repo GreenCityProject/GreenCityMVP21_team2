@@ -10,9 +10,9 @@ import greencity.constant.AppConstant;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.notification.NotificationDto;
 import greencity.dto.user.UserVO;
-import greencity.entity.Language;
 import greencity.entity.Notification;
 import greencity.entity.localization.NotificationTranslation;
+import greencity.enums.NotificationContentType;
 import greencity.enums.NotificationStatus;
 import greencity.enums.Role;
 import greencity.exception.exceptions.NotFoundException;
@@ -42,6 +42,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final LanguageRepo languageRepo;
     private final UserRepo userRepo;
     private final ModelMapper modelMapper;
+    private final EcoNewsService ecoNewsService;
 
     @Override
     public List<NotificationDto> getAllNotifications(String userEmail, String lang) {
@@ -124,36 +125,34 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public void createNotification(List <String> textList, UserVO user, Long autorId, String title){
+    public void createNotificationLikedNews(UserVO user, Long ecoNewsId){
+        Long autorId = ecoNewsService.getById(ecoNewsId).getAuthor().getId();
+        String title = ecoNewsService.getById(ecoNewsId).getTitle();
+        createNotification(
+                List.of(NotificationContentType.LIKE_NEWS_EN,
+                        NotificationContentType.LIKE_NEWS_UA), user, autorId, title);
+    }
+
+    private void createNotification(List <NotificationContentType> notificationContentTypeList, UserVO user, Long autorId, String title){
         Notification notification = Notification.builder()
                         .receiver(userRepo.findById(autorId).get())
                         .status(UNREAD)
                         .createdAt(LocalDateTime.now())
                         .expireAt(LocalDateTime.now().plusDays(1))
                 .build();
-        List <NotificationTranslation> notificationTranslationList = textList.stream()
-                .map(text-> createNotificationTranslation(text, notification, user, title)).toList();
+        List <NotificationTranslation> notificationTranslationList = notificationContentTypeList.stream()
+                .map(contentType-> createNotificationTranslation(contentType, notification, user, title)).toList();
         notification.setTranslations(notificationTranslationList);
         notificationRepo.save(notification);
     }
 
-    private NotificationTranslation createNotificationTranslation(String text, Notification notification,
+    private NotificationTranslation createNotificationTranslation(NotificationContentType notificationContentType, Notification notification,
                                                                   UserVO user, String title){
         return NotificationTranslation.builder()
-                .content(user.getName() + text + title+ ".")
-                .language(languageDefinition(text))
+                .content(user.getName() + notificationContentType.toString() + title+ ".")
+                .language(languageRepo.findByCode(notificationContentType.getLanguageCode()).get())
                 .notification(notification)
                 .build();
-    }
-
-    private Language languageDefinition (String text){
-        if (text.matches("^[A-Za-z.,!?\\s']+$")) {
-            return languageRepo.findByCode("en").orElse(null);
-        } else if (text.matches("^[А-Яа-яієїґ'.,!?\\s-]+$")) {
-            return languageRepo.findByCode("ua").orElse(null);
-        } else {
-            return null;
-        }
     }
 
     private NotificationTranslation getTranslationByNotificationIdAndLang(Long id, String lang){
@@ -167,10 +166,8 @@ public class NotificationServiceImpl implements NotificationService {
         return map(translation);
     }
 
-
     private void checkUserHasPermissionToAccess(UserVO user, Notification notification) {
         var receiverId = notification.getReceiver().getId();
-
         if ((!user.getRole().equals(Role.ROLE_ADMIN)) && (!user.getId().equals(receiverId))) {
             throw new UserHasNoPermissionToAccessException(USER_HAS_NO_PERMISSION);
         }

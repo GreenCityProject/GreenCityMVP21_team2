@@ -336,11 +336,7 @@ public class EcoNewsController {
     })
     @PostMapping("/like")
     public void like(@RequestParam("id") Long id, @Parameter(hidden = true) @CurrentUser UserVO user) {
-        Long autorId = ecoNewsService.getById(id).getAuthor().getId();
-        String title = ecoNewsService.getById(id).getTitle();
-        notificationService.createNotification(
-                List.of(" liked your news ",
-                        " вподобав Вашу новину "), user, autorId, title);
+        notificationService.createNotificationLikedNews(user, id);
         ecoNewsService.like(user, id);
     }
 

@@ -17,5 +17,5 @@ public interface NotificationService {
 
     NotificationDto changeStatusToUnread(Long id, UserVO user, String lang);
 
-    void createNotification (List<String> text, UserVO userVO, Long autorId, String title);
+    void createNotificationLikedNews(UserVO user, Long ecoNewsId);
 }
