@@ -175,6 +175,8 @@ public class SecurityConfig {
                                 "/events/comments/count/{eventId}",
                                 "/events/comments/active",
                                 "/events/comments/likes/count/{commentId}",
+                                "/events/comments/replies/active/{parentCommentId}",
+                                "/events/comments/replies/active/count/{parentCommentId}",
                                 "/shopping-list-items",
                                 "/habit/assign/allForCurrentUser",
                                 "/habit/assign/active/{date}",

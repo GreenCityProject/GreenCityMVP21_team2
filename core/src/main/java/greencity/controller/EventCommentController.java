@@ -179,4 +179,38 @@ public class EventCommentController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(eventCommentService.getAllActiveComments(pageable, user, eventId));
     }
+
+    /**
+     * Method returns all active replies to {@link EventCommentDto}.
+     *
+     */
+    @Operation(summary = "Get all active replies to comment.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @GetMapping("/replies/active/{parentCommentId}")
+    public ResponseEntity<PageableDto<EventCommentDto>> findAllActiveReplies (
+            @Parameter(hidden = true) Pageable pageable, @PathVariable Long parentCommentId,
+            @Parameter(hidden = true) @CurrentUser UserVO user){
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(eventCommentService.findAllActiveReplies(pageable, user, parentCommentId));
+    }
+
+    /**
+     * Method returns count replies for {@link EventCommentDto}.
+     *
+     */
+    @Operation(summary = "Count replies for comment.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @GetMapping("/replies/active/count/{parentCommentId}")
+    public ResponseEntity<Integer> getCountOfActiveReplies (@PathVariable Long parentCommentId){
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(eventCommentService.getCountOfActiveReplies(parentCommentId));
+    }
 }

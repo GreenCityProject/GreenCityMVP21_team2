@@ -123,4 +123,10 @@ public interface EventsService {
      * @return instance of {@link EventDto}.
      */
     EventDto update(EventDtoYoUpdate eventDto, List<MultipartFile> images, UserVO user);
+
+    /**
+     * Method for rating {@link EventDto} instance.
+     *
+     */
+    void rateEvent(Long eventId, int grade);
 }

@@ -44,6 +44,10 @@ public class EventCommentServiceImpl implements EventCommentService{
         eventComment.setAuthor(modelMapper.map(userVO, User.class));
         eventComment.setEvent(event);
         eventComment.setCreatedDate(currentDate);
+        Long parentCommentId = addEventCommentDtoRequest.getEventParentCommentId();
+        if (parentCommentId != null){
+            eventComment.setEventParentComment(eventCommentRepo.findById(parentCommentId).get());
+        }
         return modelMapper.map(eventCommentRepo.save(eventComment), AddEventCommentDtoRequest.class);
     }
 
@@ -114,6 +118,25 @@ public class EventCommentServiceImpl implements EventCommentService{
         User currentUser = userRepo.findById(userVO.getId()).get();
         Page<EventComment> pageEventComment = eventCommentRepo.findAllByEventIdOrderByCreatedDateDesc(
                 eventId, page);
+
+        return converterPageEventCommentToPageableDtoEventCommentDto(pageEventComment, currentUser);
+    }
+
+    @Override
+    public PageableDto<EventCommentDto> findAllActiveReplies(Pageable pageable, UserVO userVO, Long parentCommentId){
+        User currentUser = userRepo.findById(userVO.getId()).get();
+        Page<EventComment> pageEventComment = eventCommentRepo.
+                findAllByEventParentCommentIdOrderByCreatedDateDesc(parentCommentId, pageable);
+        return converterPageEventCommentToPageableDtoEventCommentDto(pageEventComment, currentUser);
+    }
+
+    @Override
+    public Integer getCountOfActiveReplies (Long eventParentCommentId){
+        return eventCommentRepo.countByEventParentCommentId(eventParentCommentId);
+    }
+
+    private PageableDto<EventCommentDto> converterPageEventCommentToPageableDtoEventCommentDto (
+            Page<EventComment> pageEventComment, User currentUser){
         List<EventCommentDto> eventCommentDtos = pageEventComment.stream()
                 .map(eventComment -> converterEventCommentToEventCommentDto(eventComment, currentUser))
                 .collect(Collectors.toList());
@@ -130,6 +153,7 @@ public class EventCommentServiceImpl implements EventCommentService{
         Set<User> usersLikedSet = eventComment.getUsersLiked();
         eventCommentDto.setCurrentUserLiked(usersLikedSet.contains(currentUser));
         eventCommentDto.setNumberOfLikes(usersLikedSet.size());
+        eventCommentDto.setNumberOfReplies(getCountOfActiveReplies(eventComment.getId()));
         return eventCommentDto;
     }
 }

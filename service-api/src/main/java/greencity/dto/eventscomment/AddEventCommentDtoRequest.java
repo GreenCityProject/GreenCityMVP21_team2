@@ -14,4 +14,6 @@ public class AddEventCommentDtoRequest {
     private Long id;
 
     private String text;
+
+    private Long eventParentCommentId;
 }

@@ -4,7 +4,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="Chekhovska-3" author="Maryna Chekhovska">
+    <changeSet id="Chekhovska-4" author="Maryna Chekhovska">
         <createTable tableName="events">
             <column name="id" autoIncrement="true" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -20,6 +20,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="open" type="BOOLEAN"/>
+            <column name="rating" type="DOUBLE"/>
             <column name="organizer_id"  type="BIGINT">
                 <constraints foreignKeyName="FK_events_users" references="users (id)"/>
             </column>

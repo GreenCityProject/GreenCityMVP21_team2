@@ -4,7 +4,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="createTableEventCommentChekhovska1" author="Maryna Chekhovska">
+    <changeSet id="createTableEventCommentChekhovska3" author="Maryna Chekhovska">
         <createTable tableName="event_comment">
             <column name="id" autoIncrement="true" type="BIGINT">
                 <constraints primaryKey="true"/>
@@ -18,6 +18,9 @@
             </column>
             <column name="event_id"  type="BIGINT">
                 <constraints foreignKeyName="FK_event_comments_events" references="events (id)"/>
+            </column>
+            <column name="event_parent_comment_id" type="BIGINT">
+                <constraints foreignKeyName="FK_event_comments_parent_comment" references="event_comment (id)"/>
             </column>
         </createTable>
         <rollback>

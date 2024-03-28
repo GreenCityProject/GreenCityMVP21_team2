@@ -32,6 +32,8 @@ public class EventDto {
 
     private Boolean open;
 
+    private Double rating;
+
     private List<TagUaEnDto> tags;
 
     private List<EventDateLocationDto> dates;

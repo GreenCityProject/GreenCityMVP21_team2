@@ -66,4 +66,16 @@ public interface EventCommentService {
      *
      */
     PageableDto<EventCommentDto> getAllActiveComments(Pageable pageable, UserVO user, Long eventId);
+
+    /**
+     * Method returns all active replies to {@link EventCommentDto}.
+     *
+     */
+    PageableDto<EventCommentDto> findAllActiveReplies(Pageable pageable, UserVO user, Long parentCommentId);
+
+    /**
+     * Method returns count replies for {@link EventCommentDto}.
+     *
+     */
+    Integer getCountOfActiveReplies (Long eventParentCommentId);
 }

@@ -215,6 +215,24 @@ public class EventsController {
     }
 
     /**
+     * Method for rating {@link EventDto} instance.
+     * @param grade should be between 1 and 100;
+     */
+    @Operation(summary = "Rate event.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @PostMapping("/rateEvent/{eventId}/{grade}")
+    public ResponseEntity<Object> rateEvent (@PathVariable Long eventId,
+                                                  @PathVariable Integer grade){
+        eventsService.rateEvent(eventId, grade);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    /**
      * Method for updating {@link EventDto}.
      *
      * @param  {@link EventDto} entity.

@@ -11,4 +11,8 @@ public interface EventCommentRepo extends JpaRepository<EventComment, Long> {
     int countByEventId(Long eventId);
 
     Page<EventComment> findAllByEventIdOrderByCreatedDateDesc(Long eventId, Pageable page);
+
+    Page<EventComment> findAllByEventParentCommentIdOrderByCreatedDateDesc(Long parentId, Pageable page);
+
+    int countByEventParentCommentId(Long parentId);
 }

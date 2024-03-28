@@ -37,6 +37,9 @@ public class Events {
     @Column(nullable = false)
     private Boolean open;
 
+    @Column
+    private Double rating;
+
     @ManyToOne
     private User organizer;
 

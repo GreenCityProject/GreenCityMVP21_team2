@@ -227,6 +227,25 @@ public class EventsServiceImpl implements EventsService {
         return event.getEventAttender().stream().map(user -> modelMapper.map(user, EventAttenderDto.class)).toList();
     }
 
+    @Override
+    public void rateEvent(Long eventId, int grade){
+        if (grade < 1 || grade > 100) {
+            throw new IllegalArgumentException("Grade should be between 1 and 100");
+        }
+        Events event = eventsRepo.findById(eventId).orElseThrow(() -> new NotFoundException(ErrorMessage.EVENTS_NOT_FOUND_BY_ID + eventId));
+        double newRating;
+        if (event.getRating() == null){
+            newRating = grade;
+        } else {
+            double currentRating = event.getRating();
+            double totalRatings = currentRating + 1;
+            newRating = ((currentRating * totalRatings) + grade) / (totalRatings + 1);
+        }
+        event.setRating(newRating);
+
+        eventsRepo.save(event);
+    }
+
     private String extractFromTagVONameInLanguage (List<TagVO> tagVOS, String language) {
         return String.valueOf(tagVOS.stream()
                 .flatMap(t -> t.getTagTranslations().stream())

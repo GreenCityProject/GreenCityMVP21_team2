@@ -34,6 +34,9 @@ public class EventComment {
     @ManyToOne(fetch = FetchType.LAZY)
     private Events event;
 
+    @ManyToOne
+    private EventComment eventParentComment;
+
     @ManyToMany
     @JoinTable(
             name = "event_comment_users_liked",
