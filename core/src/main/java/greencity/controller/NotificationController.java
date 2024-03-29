@@ -1,7 +1,6 @@
 package greencity.controller;
 
 import greencity.annotations.CurrentUser;
-import greencity.annotations.ValidLanguage;
 import greencity.dto.notification.NotificationDto;
 import greencity.dto.user.UserVO;
 import greencity.service.NotificationService;
@@ -12,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Locale;
 
 @RestController
 @RequestMapping("/notifications")
@@ -21,13 +19,13 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping
-    public List<NotificationDto> getAll(@ValidLanguage Locale locale, @Parameter(hidden = true) @CurrentUser UserVO userVO){
-        return notificationService.getAllNotifications(userVO.getEmail(), locale.getLanguage());
+    public List<NotificationDto> getAll(@CurrentUser UserVO userVO){
+        return notificationService.getAllNotifications(userVO.getId());
     }
 
     @GetMapping("/latest")
-    public List<NotificationDto> getLatestNotifications(@Parameter(hidden = true) @CurrentUser UserVO userVO, @ValidLanguage Locale locale){
-        return notificationService.getLatestUnreadNotifications(userVO.getEmail(), locale.getLanguage());
+    public List<NotificationDto> getLatestNotifications(@Parameter(hidden = true) @CurrentUser UserVO userVO){
+        return notificationService.getLatestUnreadNotifications(userVO.getId());
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -39,16 +37,16 @@ public class NotificationController {
 
     @PutMapping("/{id}/read")
     public ResponseEntity<?> changeNotificationStatusToRead(@Parameter(hidden = true) @CurrentUser UserVO user,
-                                                            @PathVariable Long id, @ValidLanguage Locale locale){
-        var notification = notificationService.changeStatusToRead(id,user, locale.getLanguage());
+                                                            @PathVariable Long id){
+        var notification = notificationService.changeStatusToRead(id,user);
         return ResponseEntity.ok(notification);
     }
 
 
     @PutMapping("/{id}/unread")
     public ResponseEntity<?> getLatestNotifications(@Parameter(hidden = true) @CurrentUser UserVO user,
-                                                    @PathVariable Long id, @ValidLanguage Locale locale){
-        var notification = notificationService.changeStatusToUnread(id,user,locale.getLanguage());
+                                                    @PathVariable Long id){
+        var notification = notificationService.changeStatusToUnread(id,user);
         return ResponseEntity.ok(notification);
     }
 
