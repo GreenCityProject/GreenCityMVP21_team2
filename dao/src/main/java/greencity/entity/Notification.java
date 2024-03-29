@@ -1,14 +1,13 @@
 package greencity.entity;
 
 import greencity.constant.AppConstant;
-import greencity.entity.localization.NotificationTranslation;
+
 import greencity.enums.NotificationStatus;
+import greencity.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.time.LocalDateTime.*;
 
@@ -17,8 +16,7 @@ import static java.time.LocalDateTime.*;
 @Getter
 @Setter
 @Entity
-@Table(name = "notification",indexes =
-        @Index(name = "IX_notification_receiver_id",columnList = "receiver_id"))
+@Table(name = "notification")
 @Builder
 public class Notification {
     @Id
@@ -29,6 +27,10 @@ public class Notification {
     @Column(nullable = false, length = 100)
     private NotificationStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 100)
+    private NotificationType type;
+
     @Column(nullable = false, name = "created_at")
     private LocalDateTime createdAt = now();
 
@@ -36,11 +38,15 @@ public class Notification {
     private LocalDateTime expireAt = now().plusDays(AppConstant.NOTIFIC_ACTIVE_DAYS_TIME);
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "evaluator_id")
+    private User evaluator;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "receiver_id")
     private User receiver;
 
-    @OneToMany(mappedBy = "notification",cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<NotificationTranslation> translations = new ArrayList<>();
+    @Column(nullable = false, name = "related_entity_id")
+    private Long relatedEntityId;
 
     @Override
     public boolean equals(Object o) {

@@ -1,11 +1,9 @@
 package greencity.entity;
 
-import greencity.entity.localization.NotificationTranslation;
 import greencity.entity.localization.ShoppingListItemTranslation;
 import lombok.*;
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,9 +26,6 @@ public class Language {
 
     @OneToMany(mappedBy = "language", fetch = FetchType.LAZY)
     private List<HabitTranslation> habitTranslations;
-
-    @OneToMany(mappedBy = "language", fetch = FetchType.LAZY)
-    private List<NotificationTranslation> translations = new ArrayList<>();
 
     @OneToMany(mappedBy = "language", fetch = FetchType.LAZY)
     private List<ShoppingListItemTranslation> shoppingListItemTranslations;
