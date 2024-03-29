@@ -21,12 +21,15 @@ public class EventComment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false, length = 8000)
     private String text;
 
 
     @Column(nullable = false, updatable = false)
     private ZonedDateTime createdDate;
+
+    @Column
+    private ZonedDateTime editingDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User author;

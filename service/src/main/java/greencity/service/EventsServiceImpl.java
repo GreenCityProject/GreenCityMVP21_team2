@@ -44,7 +44,6 @@ public class EventsServiceImpl implements EventsService {
     private final ModelMapper modelMapper;
     private final TagsService tagService;
     private final FileService fileService;
-    private ZonedDateTime currentDate = ZonedDateTime.now();
     private int maxImagesListSize = 6;
     private int maxDateLocationListSize = 7;
     private String defaultImage = "https://csb10032000a548f571" +
@@ -59,7 +58,7 @@ public class EventsServiceImpl implements EventsService {
         User user = userRepo.getById(userId);
         eventsDto.setOrganizer(modelMapper.map(user, EventAuthorDto.class));
 
-        eventsDto.setCreationDate(currentDate.toString());
+        eventsDto.setCreationDate(ZonedDateTime.now().toString());
 
         List<TagVO> tagVOS = tagService.findTagsByNamesAndType(
                 addEventDtoRequest.getTags(), TagType.EVENT);
@@ -379,7 +378,7 @@ public class EventsServiceImpl implements EventsService {
     private void checkEvent (List<EventDateLocationDto> eventDateLocationDtos, List<MultipartFile> images){
         HashSet<ZonedDateTime> dateSet = new HashSet<>();
         if (eventDateLocationDtos.stream().anyMatch(eventDateLocationDto ->
-                eventDateLocationDto.getStartDate().isBefore(currentDate))){
+                eventDateLocationDto.getStartDate().isBefore(ZonedDateTime.now()))){
             throw new NotSavedException(ErrorMessage.EVENT_DATE_GREATER_CURRENT_DATE);
         }
         if (((images!= null)&&(images.size() > maxImagesListSize)) ||

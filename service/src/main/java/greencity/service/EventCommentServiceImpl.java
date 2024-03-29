@@ -35,7 +35,7 @@ public class EventCommentServiceImpl implements EventCommentService{
     private final EventCommentRepo eventCommentRepo;
     private final UserRepo userRepo;
     private final ModelMapper modelMapper;
-    private ZonedDateTime currentDate = ZonedDateTime.now();
+
     @Override
     public AddEventCommentDtoRequest save(AddEventCommentDtoRequest addEventCommentDtoRequest, Long eventId,
                                           UserVO userVO) {
@@ -43,9 +43,9 @@ public class EventCommentServiceImpl implements EventCommentService{
         EventComment eventComment = modelMapper.map(addEventCommentDtoRequest, EventComment.class);
         eventComment.setAuthor(modelMapper.map(userVO, User.class));
         eventComment.setEvent(event);
-        eventComment.setCreatedDate(currentDate);
+        eventComment.setCreatedDate(ZonedDateTime.now());
         Long parentCommentId = addEventCommentDtoRequest.getEventParentCommentId();
-        if (parentCommentId != null){
+        if (parentCommentId != null && parentCommentId != 0){
             eventComment.setEventParentComment(eventCommentRepo.findById(parentCommentId).get());
         }
         return modelMapper.map(eventCommentRepo.save(eventComment), AddEventCommentDtoRequest.class);
@@ -58,6 +58,7 @@ public class EventCommentServiceImpl implements EventCommentService{
         if (!userVO.getId().equals(eventComment.getAuthor().getId())) {
             throw new BadRequestException(ErrorMessage.USER_HAS_NO_PERMISSION);
         }
+        eventComment.setEditingDate(ZonedDateTime.now());
         eventComment.setText(text);
         eventCommentRepo.save(eventComment);
     }

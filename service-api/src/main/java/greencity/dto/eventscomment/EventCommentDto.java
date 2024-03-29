@@ -19,6 +19,8 @@ public class EventCommentDto {
 
     private ZonedDateTime createdDate;
 
+    private ZonedDateTime editingDate;
+
     private Boolean currentUserLiked;
 
     private Integer numberOfLikes;

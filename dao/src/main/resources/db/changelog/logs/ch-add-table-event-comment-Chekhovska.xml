@@ -4,13 +4,16 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="createTableEventCommentChekhovska3" author="Maryna Chekhovska">
+    <changeSet id="createTableEventCommentChekhovska4" author="Maryna Chekhovska">
         <createTable tableName="event_comment">
             <column name="id" autoIncrement="true" type="BIGINT">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="created_date" type="TIMESTAMP WITH TIME ZONE"/>
-            <column name="text" type="VARCHAR(63206)">
+            <column name="created_date" type="TIMESTAMP WITH TIME ZONE">
+            <constraints nullable="false"/>
+            </column>
+            <column name="editing_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="text" type="VARCHAR(8000)">
                 <constraints nullable="false"/>
             </column>
             <column name="author_id"  type="BIGINT">
