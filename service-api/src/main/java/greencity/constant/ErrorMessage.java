@@ -97,6 +97,7 @@ public final class ErrorMessage {
     public static final String EVENTS_NOT_SAVED = "Events haven't been saved because of constraint violation";
     public static final String EVENT_DATE_GREATER_CURRENT_DATE = "The event was not saved because " +
             "the event date is older than the current date";
+    public static final String EVENT_SAME_DATE = "You can't enter the same date for two days";
     public static final String USER_CANNOT_ADD_MORE_THAN_5_SOCIAL_NETWORK_LINKS =
         "User cannot add more than 5 social network links";
     public static final String INVALID_URI = "The string could not be parsed as a URI reference.";

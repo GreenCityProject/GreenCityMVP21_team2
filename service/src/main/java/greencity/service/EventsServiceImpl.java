@@ -377,11 +377,19 @@ public class EventsServiceImpl implements EventsService {
     }
 
     private void checkEvent (List<EventDateLocationDto> eventDateLocationDtos, List<MultipartFile> images){
-        if (eventDateLocationDtos.stream().anyMatch(eventDateLocationDto -> eventDateLocationDto.getStartDate().isBefore(currentDate))){
+        HashSet<ZonedDateTime> dateSet = new HashSet<>();
+        if (eventDateLocationDtos.stream().anyMatch(eventDateLocationDto ->
+                eventDateLocationDto.getStartDate().isBefore(currentDate))){
             throw new NotSavedException(ErrorMessage.EVENT_DATE_GREATER_CURRENT_DATE);
         }
-        if (((images!= null)&&(images.size() > maxImagesListSize)) || (eventDateLocationDtos.size() > maxDateLocationListSize)){
+        if (((images!= null)&&(images.size() > maxImagesListSize)) ||
+                (eventDateLocationDtos.size() > maxDateLocationListSize)){
             throw new NotSavedException(ErrorMessage.EVENTS_NOT_SAVED);
+        }
+        if (eventDateLocationDtos.stream()
+                .anyMatch(eventDateLocationDto -> !dateSet.add(eventDateLocationDto.getStartDate()) ||
+                        !dateSet.add(eventDateLocationDto.getFinishDate()))){
+            throw new NotSavedException(ErrorMessage.EVENT_SAME_DATE);
         }
     }
 }
