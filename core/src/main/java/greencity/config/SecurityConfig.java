@@ -167,6 +167,7 @@ public class SecurityConfig {
                                 "/econews/isLikedByUser",
                                 "/events/event/{eventId}",
                                 "/events",
+                                "/events/filtered",
                                 "/events/myEvents/createdEvents",
                                 "/events/myEvents/relatedEvents",
                                 "/events/myEvents",

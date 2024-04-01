@@ -13,6 +13,8 @@ import greencity.enums.TagType;
 import greencity.exception.exceptions.BadRequestException;
 import greencity.exception.exceptions.NotFoundException;
 import greencity.exception.exceptions.NotSavedException;
+import greencity.filters.EventSpecification;
+import greencity.filters.SearchCriteria;
 import greencity.repository.EventDateLocationsRepo;
 import greencity.repository.EventsImagesRepo;
 import greencity.repository.EventsRepo;
@@ -24,9 +26,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -134,8 +138,8 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
-    public EventDto update(EventDtoYoUpdate eventDtoYoUpdate, List<MultipartFile> images,  UserVO user) {
-        EventDto eventDto = converterEventDtoYoUpdateToEventDto(eventDtoYoUpdate);
+    public EventDto update(EventDtoToUpdate eventDtoToUpdate, List<MultipartFile> images,  UserVO user) {
+        EventDto eventDto = converterEventDtoYoUpdateToEventDto(eventDtoToUpdate);
         Long eventId = eventDto.getId();
         Events events = eventsRepo.findById(eventId).get();
         if (user.getRole() != Role.ROLE_ADMIN && !user.getId().equals(events.getOrganizer().getId())) {
@@ -143,12 +147,12 @@ public class EventsServiceImpl implements EventsService {
         }
         checkEvent(eventDto.getDates(), images);
         eventDateLocationsRepo.deleteAllEventDateLocationsByEventId(eventId);
-        eventDtoYoUpdate.getImagesToDelete().stream().forEach(link ->
+        eventDtoToUpdate.getImagesToDelete().stream().forEach(link ->
                 eventsImagesRepo.deleteAllEventsImagesByEventIdAndLink(eventId, link));
         setImagesInEventDto(eventDto, images);
         Events finalEvent = converterEventDtoToEvent(eventDto, events);
         finalEvent.setTitle(eventDto.getTitle());
-        if(eventDtoYoUpdate.getImagesToDelete().contains(events.getTitleImage())) {
+        if(eventDtoToUpdate.getImagesToDelete().contains(events.getTitleImage())) {
             finalEvent.setTitleImage(eventDto.getTitleImage());
         } else {
             eventDto.setTitleImage(events.getTitleImage());
@@ -338,23 +342,25 @@ public class EventsServiceImpl implements EventsService {
         eventDto.setDates(converterListEventDateLocationToListEventDateLocationDto(event.getDatesLocations()));
         eventDto.setIsSubscribed(event.getEventAttender().contains(user));
         eventDto.setIsFavorite(event.getEventsFollowers().contains(user));
+        eventDto.setEnded(event.getDatesLocations().stream().allMatch(eventDateLocation ->
+                eventDateLocation.getFinishDate().isBefore(ZonedDateTime.now())));
         return eventDto;
     }
 
-    private EventDto converterEventDtoYoUpdateToEventDto (EventDtoYoUpdate eventDtoYoUpdate){
+    private EventDto converterEventDtoYoUpdateToEventDto (EventDtoToUpdate eventDtoToUpdate){
         List<TagVO> tagVOS = tagService.findTagsByNamesAndType(
-                eventDtoYoUpdate.getTags(), TagType.EVENT);
+                eventDtoToUpdate.getTags(), TagType.EVENT);
         return EventDto.builder()
-                .id(eventDtoYoUpdate.getId())
-                .title(eventDtoYoUpdate.getTitle())
-                .titleImage(eventDtoYoUpdate.getTitleImage())
+                .id(eventDtoToUpdate.getId())
+                .title(eventDtoToUpdate.getTitle())
+                .titleImage(eventDtoToUpdate.getTitleImage())
                 .tags(converterListTagVOToListTagUaEnDto(tagVOS))
-                .organizer(eventDtoYoUpdate.getOrganizer())
-                .open(eventDtoYoUpdate.getOpen())
-                .description(eventDtoYoUpdate.getDescription())
-                .dates(eventDtoYoUpdate.getDatesLocations())
-                .creationDate(eventDtoYoUpdate.getCreationDate())
-                .additionalImages(eventDtoYoUpdate.getAdditionalImages())
+                .organizer(eventDtoToUpdate.getOrganizer())
+                .open(eventDtoToUpdate.getOpen())
+                .description(eventDtoToUpdate.getDescription())
+                .dates(eventDtoToUpdate.getDatesLocations())
+                .creationDate(eventDtoToUpdate.getCreationDate())
+                .additionalImages(eventDtoToUpdate.getAdditionalImages())
                 .build();
     }
 
@@ -389,6 +395,59 @@ public class EventsServiceImpl implements EventsService {
                 .anyMatch(eventDateLocationDto -> !dateSet.add(eventDateLocationDto.getStartDate()) ||
                         !dateSet.add(eventDateLocationDto.getFinishDate()))){
             throw new NotSavedException(ErrorMessage.EVENT_SAME_DATE);
+        }
+    }
+
+    @Override
+    public PageableAdvancedDto<EventDto>  getFilteredDataForManagementByPage(
+            Pageable pageable, EventViewDto eventViewDto, UserVO userVO) {
+        User user = userRepo.getById(userVO.getId());
+        Page<Events> page = eventsRepo.findAll(getSpecification(eventViewDto, user), pageable);
+        return buildPageableAdvancedDtoByEventDto(page, user);
+    }
+
+    public EventSpecification getSpecification(EventViewDto eventViewDto, User user) {
+        List<SearchCriteria> searchCriteria = buildSearchCriteria(eventViewDto, user);
+        return new EventSpecification(searchCriteria);
+    }
+
+    public List<SearchCriteria> buildSearchCriteria(EventViewDto eventViewDto, User user) {
+        List<SearchCriteria> criteriaList = new ArrayList<>();
+        String location = eventViewDto.getLocation();
+        if (location.equalsIgnoreCase("online")) {
+            setValueIfNotEmpty(criteriaList, Events_.DATES_LOCATIONS, EventDateLocation_.ONLINE_LINK, location);
+        }
+        if (eventViewDto.getStatus().equalsIgnoreCase("open")) {
+            setValueIfNotEmpty(criteriaList, Events_.OPEN, Events_.OPEN, String.valueOf(true));
+        }
+        if (eventViewDto.getStatus().equalsIgnoreCase("closed")) {
+            setValueIfNotEmpty(criteriaList, Events_.OPEN, Events_.OPEN, String.valueOf(false));
+        }
+        if (eventViewDto.getStatus().equalsIgnoreCase("joined")) {
+            setValueIfNotEmpty(criteriaList, Events_.EVENT_ATTENDER, Events_.EVENT_ATTENDER, user.getEmail());
+        }
+        if (eventViewDto.getStatus().equalsIgnoreCase("saved")) {
+            setValueIfNotEmpty(criteriaList, Events_.EVENTS_FOLLOWERS, Events_.EVENTS_FOLLOWERS, user.getEmail());
+        }
+        if (eventViewDto.getStatus().equalsIgnoreCase("created")) {
+            setValueIfNotEmpty(criteriaList, Events_.ORGANIZER, Events_.ORGANIZER, user.getEmail());
+        }
+        if (eventViewDto.getEventTime().equalsIgnoreCase("upcoming")) {
+            setValueIfNotEmpty(criteriaList, Events_.DATES_LOCATIONS, EventDateLocation_.START_DATE, ZonedDateTime.now().toString());
+        }
+        if (eventViewDto.getEventTime().equalsIgnoreCase("passed")) {
+            setValueIfNotEmpty(criteriaList, Events_.DATES_LOCATIONS, EventDateLocation_.FINISH_DATE, ZonedDateTime.now().toString());
+        }
+        setValueIfNotEmpty(criteriaList, Events_.TAGS, Events_.TAGS, eventViewDto.getType());
+        return criteriaList;
+    }
+    private void setValueIfNotEmpty(List<SearchCriteria> searchCriteria, String key, String type, String value) {
+        if (!StringUtils.isEmpty(value)) {
+            searchCriteria.add(SearchCriteria.builder()
+                    .key(key)
+                    .type(type)
+                    .value(value)
+                    .build());
         }
     }
 }

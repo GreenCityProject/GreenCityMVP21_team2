@@ -122,11 +122,19 @@ public interface EventsService {
      * @param eventDto - {@link EventDto} instance.
      * @return instance of {@link EventDto}.
      */
-    EventDto update(EventDtoYoUpdate eventDto, List<MultipartFile> images, UserVO user);
+    EventDto update(EventDtoToUpdate eventDto, List<MultipartFile> images, UserVO user);
 
     /**
      * Method for rating {@link EventDto} instance.
      *
      */
     void rateEvent(Long eventId, int grade);
+
+    /**
+     * Method for getting all events by filter.
+     *
+     *
+     */
+    PageableAdvancedDto<EventDto>  getFilteredDataForManagementByPage(
+            Pageable pageable, EventViewDto eventViewDto, UserVO userVO);
 }

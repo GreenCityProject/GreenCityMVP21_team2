@@ -11,7 +11,8 @@ import java.util.List;
 @ToString
 @Builder
 @EqualsAndHashCode
-public class EventDtoYoUpdate {
+public class EventDtoToUpdate {
+
     private Long id;
 
     private EventAuthorDto organizer;
