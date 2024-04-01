@@ -1,21 +1,15 @@
 package greencity.config;
 
-import static greencity.enums.EmailNotification.*;
-import static greencity.enums.FactOfDayStatus.*;
-import static java.time.LocalDateTime.*;
-
 import greencity.client.RestClient;
 import greencity.constant.CacheConstants;
 import greencity.dto.user.UserVO;
 import greencity.entity.HabitAssign;
 import greencity.entity.HabitFactTranslation;
-import greencity.entity.Notification;
 import greencity.entity.User;
 import greencity.enums.HabitAssignStatus;
 import greencity.message.SendHabitNotification;
 import greencity.repository.HabitAssignRepo;
 import greencity.repository.HabitFactTranslationRepo;
-import greencity.repository.NotificationRepo;
 import greencity.repository.RatingStatisticsRepo;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +18,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.ZonedDateTime;
 import java.util.List;
+import static greencity.enums.EmailNotification.*;
+import static greencity.enums.FactOfDayStatus.*;
 
 /**
  * Config for scheduling.
@@ -43,7 +38,6 @@ public class ScheduleConfig {
     private final HabitAssignRepo habitAssignRepo;
     private final RatingStatisticsRepo ratingStatisticsRepo;
     private final RestClient restClient;
-    private final NotificationRepo notificationRepo;
 
     /**
      * Invoke {@link SendHabitNotification} from EmailMessageReceiver to send email
@@ -154,26 +148,5 @@ public class ScheduleConfig {
                 h.setStatus(HabitAssignStatus.EXPIRED);
             }
         });
-    }
-
-
-    /**
-     * Every day at 00:00 removes all expired notifications
-     *
-     * @author Denys Ryhal
-     **/
-    @Transactional
-    @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Kiev")
-    public void removeExpiredNotifications() {
-        List<Notification> notifications = notificationRepo.findAll();
-
-        notifications.stream()
-                .filter(n -> n.getExpireAt().isBefore(now()))
-                .forEach(this::deleteNotification);
-    }
-
-    private void deleteNotification(Notification notification){
-        log.info("Delete expired notification");
-        notificationRepo.delete(notification);
     }
 }
