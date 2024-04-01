@@ -15,6 +15,7 @@ import static java.time.LocalDateTime.*;
 @NoArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode(of ={"id","status","type"})
 @Entity
 @Table(name = "notification")
 @Builder
@@ -48,16 +49,4 @@ public class Notification {
     @Column(nullable = false, name = "related_entity_id")
     private Long relatedEntityId;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Notification that)) return false;
-
-        return id.equals(that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return id.hashCode();
-    }
 }
