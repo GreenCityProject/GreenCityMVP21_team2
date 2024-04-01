@@ -112,7 +112,7 @@ public class NotificationController {
             @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN),
     })
     @PatchMapping("/{id}/unread")
-    public ResponseEntity<NotificationDto> getLatestNotifications(@Parameter(hidden = true) @CurrentUser UserVO user,
+    public ResponseEntity<NotificationDto> changeNotificationStatusToUnread(@Parameter(hidden = true) @CurrentUser UserVO user,
                                                     @PathVariable Long id){
         var notification = notificationService.changeStatusToUnread(id,user);
         return ResponseEntity.ok(notification);

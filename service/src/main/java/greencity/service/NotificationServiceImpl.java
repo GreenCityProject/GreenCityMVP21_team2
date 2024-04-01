@@ -98,8 +98,8 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationDto changeStatusToRead(Long id, UserVO user) {
         var notification = getNotificationWithUserById(id);
         checkUserHasPermissionToAccess(user,notification);
-        changeStatus(notification, READ);
         decreaseActiveNotificationTime(notification);
+        changeStatus(notification, READ);
 
         return mapToNotificationDto(notification);
     }
@@ -118,7 +118,7 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setStatus(status);
     }
 
-    private static void decreaseActiveNotificationTime(Notification notification) {
+    private void decreaseActiveNotificationTime(Notification notification) {
         if (notification.getStatus().equals(UNREAD)){
             var newExpirationTime = now().plusDays(AppConstant.READ_NOTIFIC_ACTIVE_DAYS_TIME);
             if(notification.getExpireAt().isAfter(newExpirationTime))
