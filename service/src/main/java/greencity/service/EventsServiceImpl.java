@@ -231,22 +231,30 @@ public class EventsServiceImpl implements EventsService {
     }
 
     @Override
-    public void rateEvent(Long eventId, int grade){
-        if (grade < 1 || grade > 100) {
-            throw new IllegalArgumentException("Grade should be between 1 and 100");
+    public void rateEvent(Long eventId, int grade, UserVO userVO){
+        if (grade < 1 || grade > 3) {
+            throw new IllegalArgumentException("Grade should be between 1 and 3.");
         }
-        Events event = eventsRepo.findById(eventId).orElseThrow(() -> new NotFoundException(ErrorMessage.EVENTS_NOT_FOUND_BY_ID + eventId));
+        User user = userRepo.getById(userVO.getId());
+        Events event = eventsRepo.findById(eventId).orElseThrow(() ->
+                new NotFoundException(ErrorMessage.EVENTS_NOT_FOUND_BY_ID + eventId));
         double newRating;
-        if (event.getRating() == null){
-            newRating = grade;
+        Set<User> eventRatingUserVotes = event.getEventRatingUserVotes();
+        if (eventRatingUserVotes.contains(user)){
+            throw new NotSavedException("You have already voted for this event.");
         } else {
-            double currentRating = event.getRating();
-            double totalRatings = currentRating + 1;
-            newRating = ((currentRating * totalRatings) + grade) / (totalRatings + 1);
+            if (event.getRating() == null){
+                newRating = grade;
+            } else {
+                double currentRating = event.getRating();
+                int currentUserVotes = eventRatingUserVotes.size();
+                newRating = (((currentRating * currentUserVotes) + grade) / (currentUserVotes + 1));
+            }
+            eventRatingUserVotes.add(user);
+            event.setRating(newRating);
+            event.setEventRatingUserVotes(eventRatingUserVotes);
+            eventsRepo.save(event);
         }
-        event.setRating(newRating);
-
-        eventsRepo.save(event);
     }
 
     private String extractFromTagVONameInLanguage (List<TagVO> tagVOS, String language) {

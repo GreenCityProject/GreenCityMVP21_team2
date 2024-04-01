@@ -36,7 +36,6 @@ public class EventsController {
      * Method for getting all events.
      *
      * @return {@link PageableAdvancedDto} of {@link EventDto} instance.
-     * @author
      */
     @Operation(summary = "Get all events.")
     @ApiResponses(value = {
@@ -55,7 +54,6 @@ public class EventsController {
      * Method for getting all events by filter.
      *
      * @return {@link PageableAdvancedDto} of {@link EventDto} instance.
-     * @author
      */
     @Operation(summary = "Get all events by filter.")
     @ApiResponses(value = {
@@ -75,7 +73,6 @@ public class EventsController {
      * Method for getting all events by organizer.
      *
      * @return {@link PageableAdvancedDto} of {@link EventDto} instance.
-     * @author
      */
     @Operation(summary = "Get all events by organizer.")
     @ApiResponses(value = {
@@ -95,7 +92,6 @@ public class EventsController {
      * Method for getting all users related events.
      *
      * @return {@link PageableAdvancedDto} of {@link EventDto} instance.
-     * @author
      */
     @Operation(summary = "Get all users events and events which were created by this user.")
     @ApiResponses(value = {
@@ -115,7 +111,6 @@ public class EventsController {
      * Method for getting all {@link EventDto} where the user is an event attender.
      *
      * @return {@link PageableAdvancedDto} of {@link EventDto} instance.
-     * @author
      */
     @Operation(summary = "Get all users events.")
     @ApiResponses(value = {
@@ -135,7 +130,6 @@ public class EventsController {
      * Method for getting all {@link EventDto} attenders.
      *
      * @return list of {@link EventAttenderDto} instance.
-     * @author
      */
     @Operation(summary = "Get all event attenders.")
     @ApiResponses(value = {
@@ -154,7 +148,6 @@ public class EventsController {
      * Method for getting event by id.
      *
      * @return {@link EventDto} instance.
-     * @author
      */
     @Operation(summary = "Get the event by id.")
     @ApiResponses(value = {
@@ -174,8 +167,7 @@ public class EventsController {
      * Method for creating {@link EventDto}.
      *
      * @param addEventDtoRequest - dto for {@link EventDto} entity.
-     * @return dto {@link EventDto} instance.
-     * @author .
+     * @return {@link EventDto} instance.
      */
     @Operation(summary = "Create new event.")
     @ResponseStatus(value = HttpStatus.CREATED)
@@ -233,7 +225,7 @@ public class EventsController {
 
     /**
      * Method for rating {@link EventDto} instance.
-     * @param grade should be between 1 and 100;
+     * @param grade should be between 1 and 3;
      */
     @Operation(summary = "Rate event.")
     @ApiResponses(value = {
@@ -244,16 +236,16 @@ public class EventsController {
     })
     @PostMapping("/rateEvent/{eventId}/{grade}")
     public ResponseEntity<Object> rateEvent (@PathVariable Long eventId,
-                                                  @PathVariable Integer grade){
-        eventsService.rateEvent(eventId, grade);
+                                             @PathVariable Integer grade,
+                                             @Parameter(hidden = true) @CurrentUser UserVO user){
+        eventsService.rateEvent(eventId, grade, user);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     /**
      * Method for updating {@link EventDto}.
      *
-     * @param  {@link EventDto} entity.
-     * @return dto {@link EventDto} instance.
+     * @return {@link EventDto} instance.
      */
     @Operation(summary = "Update event")
     @ApiResponses(value = {

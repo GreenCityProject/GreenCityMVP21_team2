@@ -78,6 +78,19 @@
             <dropTable tableName="events_followers"/>
         </rollback>
     </changeSet>
+    <changeSet id="changeSetEventRatingUserVotes" author="Maryna Chekhovska">
+        <createTable tableName="events_rating_user_votes">
+            <column name="event_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_event_rating_id" references="events (id)"/>
+            </column>
+            <column name="user_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_user_events_rating" references="users (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="events_rating_user_votes"/>
+        </rollback>
+    </changeSet>
     <changeSet id="changeSetEventTags1" author="Maryna Chekhovska">
         <createTable tableName="events_tags">
             <column name="event_id"  type="BIGINT">

@@ -125,10 +125,11 @@ public interface EventsService {
     EventDto update(EventDtoToUpdate eventDto, List<MultipartFile> images, UserVO user);
 
     /**
-     * Method for rating {@link EventDto} instance.
+     * A method for a user to rate an event based on the provided event identifier
+     * and a rating represented as an integer ranging from 1 to 3.
      *
      */
-    void rateEvent(Long eventId, int grade);
+    void rateEvent(Long eventId, int grade, UserVO userVO);
 
     /**
      * Method for getting all events by filter.

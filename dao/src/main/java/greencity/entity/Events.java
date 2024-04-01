@@ -67,6 +67,13 @@ public class Events {
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> eventsFollowers = new HashSet<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "events_rating_user_votes",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private Set<User> eventRatingUserVotes = new HashSet<>();
+
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     private List<EventsImages> eventsImages;
 }
