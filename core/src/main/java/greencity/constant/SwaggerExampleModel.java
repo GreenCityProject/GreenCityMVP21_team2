@@ -61,6 +61,7 @@ public final class SwaggerExampleModel {
             + ADD_ECO_NEWS_EXAMPLE
             + "}\n"
             + AFTER_EXAMPLE;
+
     public static final String UPDATE_ECO_NEWS =
         "Update Eco News\n"
             + IMAGE_DESCRIPTION
@@ -69,6 +70,7 @@ public final class SwaggerExampleModel {
             + UPDATE_EXAMPLE
             + "}\n"
             + AFTER_EXAMPLE;
+
     public static final String ADD_EVENT = BEFORE_EXAMPLE
         + "{\n"
         + "\t\"title\":\"string\",\n"
@@ -87,6 +89,14 @@ public final class SwaggerExampleModel {
         + "\t],\n"
         + "\t\"tags\":[\"Social\"]\n"
         + "}" + AFTER_EXAMPLE;
+
+    public static final String FILTER_EVENT = BEFORE_EXAMPLE
+            + "{\n"
+            + "\t\"eventTime\":\"Upcoming\",\n"
+            + "\t\"location\":\"Online\",\n"
+            + "\t\"type\": \"Environmental\",\n"
+            + "\t\"status\":\"Open\"\n"
+            + "}" + AFTER_EXAMPLE;
 
     public static final String UPDATE_EVENT = BEFORE_EXAMPLE
         + "{\n"
