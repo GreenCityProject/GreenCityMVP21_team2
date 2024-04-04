@@ -35,7 +35,7 @@ public class NotificationController {
             @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
     })
     @GetMapping
-    public List<NotificationVO> getAll(@CurrentUser UserVO userVO){
+    public List<NotificationVO> getAll(@CurrentUser @Parameter(hidden = true) UserVO userVO){
         return notificationService.getAllNotifications(userVO.getId());
     }
 

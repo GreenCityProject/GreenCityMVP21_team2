@@ -20,5 +20,5 @@ public interface NotificationService {
 
     void createNotification (NotificationDto notificationDto);
 
-    void createTaggedUserInCommentNotification (TaggedUserNotificationDto taggedUserNotification);
+    void createTaggedUserNotifications(TaggedUserNotificationDto taggedUserNotification);
 }

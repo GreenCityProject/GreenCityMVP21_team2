@@ -99,7 +99,7 @@ public class EcoNewsCommentServiceImpl implements EcoNewsCommentService {
         List<UserVO> taggedUsers = taggedUsersService.findTaggedUsersFromText(text);
         TaggedUserNotificationDto notification = new TaggedUserNotificationDto(userVO, TAGGED_USER_UNDER_NEWS ,
                 taggedUsers, ecoNewsId);
-        notificationService.createTaggedUserInCommentNotification(notification);
+        notificationService.createTaggedUserNotifications(notification);
     }
 
     /**

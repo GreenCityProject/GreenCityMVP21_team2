@@ -9,10 +9,10 @@ import static java.util.Objects.*;
 
 import greencity.builder.PageableAdvancedBuilder;
 import greencity.constant.AppConstant;
+import greencity.dto.notification.TaggedUserNotificationDto;
 import greencity.dto.notification.NotificationDto;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.notification.NotificationVO;
-import greencity.dto.notification.TaggedUserNotificationDto;
 import greencity.dto.user.UserVO;
 import greencity.entity.Notification;
 import greencity.entity.User;
@@ -176,7 +176,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     @Async
-    public void createTaggedUserInCommentNotification(TaggedUserNotificationDto notification) {
+    public void createTaggedUserNotifications(TaggedUserNotificationDto notification) {
         requireNonNull(notification.getReceivers())
                 .forEach(n -> createNotification(new NotificationDto(notification.getEvaluator(),
                         notification.getNotificationType(),

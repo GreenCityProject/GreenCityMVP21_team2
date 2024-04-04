@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
+
 @Repository
 public interface EventDateLocationsRepo extends JpaRepository<EventDateLocation, Long> {
 
@@ -17,4 +19,6 @@ public interface EventDateLocationsRepo extends JpaRepository<EventDateLocation,
     @Query(nativeQuery = true,
             value ="DELETE FROM event_date_locations WHERE event_id = :eventId")
     void deleteAllEventDateLocationsByEventId(@Param("eventId") Long eventId);
+
+    List<EventDateLocation> findAllByEventId(Long eventId);
 }

@@ -74,7 +74,7 @@ public class EventCommentServiceImpl implements EventCommentService{
         List<UserVO> taggedUsers = taggedUsersService.findTaggedUsersFromText(text);
         TaggedUserNotificationDto notification = new TaggedUserNotificationDto(userVO, TAGGED_USER_UNDER_EVENT ,
                 taggedUsers, eventId);
-        notificationService.createTaggedUserInCommentNotification(notification);
+        notificationService.createTaggedUserNotifications(notification);
     }
 
     @Override
