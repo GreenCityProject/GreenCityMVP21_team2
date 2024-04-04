@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+    <changeSet id="check-user-table" author="Baider" runAlways="true">
+        <sql splitStatements="false">
+        <![CDATA[
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user') THEN
+            CREATE TABLE "user" (
+                -- Define columns here
+                                    id BIGINT PRIMARY KEY
+                -- Define other columns...
+            );
+            END IF;
+            END$$;
+            ]]>
+    </sql>
+    </changeSet>
+
+
+
+    <changeSet author="Baider" id="create-friends-table">
+        <createTable tableName="friends">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="friend_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Baider" id="add-fk-user_id" context="addForeignKeyConstraint">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="friends"
+                                 constraintName="fk_user_id_friends" referencedColumnNames="id"
+                                 referencedTableName="user"/>
+    </changeSet>
+
+    <changeSet author="Baider" id="add-fk-friend_id" context="addForeignKeyConstraint">
+        <addForeignKeyConstraint baseColumnNames="friend_id" baseTableName="friends"
+                                 constraintName="fk_friend_id_friends" referencedColumnNames="id"
+                                 referencedTableName="user"/>
+    </changeSet>
+</databaseChangeLog>
