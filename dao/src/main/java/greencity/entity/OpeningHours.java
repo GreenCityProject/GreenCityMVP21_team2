@@ -30,11 +30,8 @@ public class OpeningHours {
     @Column
     private LocalTime closeTime;
 
-    @Column
-    private LocalTime breakTimeStart;
-
-    @Column
-    private LocalTime breakTimeEnd;
+    @OneToOne
+    private BreakTime breakTime;
 
     @Column
     private WeekDay weekDay;

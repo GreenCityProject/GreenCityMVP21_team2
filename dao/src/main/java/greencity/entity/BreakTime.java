@@ -3,8 +3,10 @@ package greencity.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalTime;
+
 @Entity
-@Table(name = "place_locations")
+@Table(name = "break_time")
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
@@ -12,18 +14,15 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class PlaceLocations {
+public class BreakTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column
-    private Double lat;
+    private LocalTime startTime;
 
     @Column
-    private Double lng;
-
-    @Column
-    private String address;
+    private LocalTime endTime;
 }

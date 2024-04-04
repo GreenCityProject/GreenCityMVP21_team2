@@ -26,9 +26,6 @@ public class Place {
     @Column(nullable = false, length = 70)
     private String name;
 
-    @Column(length = 70)
-    private String nameEn;
-
     @Column(nullable = false)
     private String titleImage;
 
@@ -44,8 +41,12 @@ public class Place {
     @ManyToOne
     private User author;
 
-//    @Column
-//    private Integer discountValues;
+    @ManyToMany
+    @JoinTable(
+            name = "place_discount",
+            joinColumns = @JoinColumn(name = "place_id"),
+            inverseJoinColumns = @JoinColumn(name = "discount_value_id"))
+    private Set<DiscountValue> discountValues;
 
     @Column
     private PlaceStatus status;

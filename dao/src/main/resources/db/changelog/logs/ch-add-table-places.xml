@@ -5,7 +5,7 @@
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <!-- Table for places -->
-    <changeSet id="create-table-places4" author="Maryna Chekhovska">
+    <changeSet id="create-table-places5" author="Maryna Chekhovska">
         <createTable tableName="places">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -13,7 +13,6 @@
             <column name="name" type="VARCHAR(70)">
                 <constraints nullable="false"/>
             </column>
-            <column name="name_en" type="VARCHAR(70)"/>
             <column name="title_image" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
@@ -26,7 +25,6 @@
             <column name="author_id" type="BIGINT">
                 <constraints foreignKeyName="FK_places_author" references="users (id)"/>
             </column>
-<!--            <column name="discountValues" type="INTEGER"/>-->
             <column name="status" type="TINYINT">
                 <constraints nullable="false"/>
             </column>
@@ -36,8 +34,22 @@
         </rollback>
     </changeSet>
 
+    <!-- Table for places break time hours -->
+    <changeSet id="create-table-break_time" author="Maryna Chekhovska">
+        <createTable tableName="break_time">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="start_time" type="TIME"/>
+            <column name="end_time" type="TIME"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="break_time"/>
+        </rollback>
+    </changeSet>
+
     <!-- Table for places opening hours -->
-    <changeSet id="create-table-opening-hours3" author="Maryna Chekhovska">
+    <changeSet id="create-table-opening-hours4" author="Maryna Chekhovska">
         <createTable tableName="opening_hours">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -47,8 +59,9 @@
             </column>
             <column name="open_time" type="TIME"/>
             <column name="close_time" type="TIME"/>
-            <column name="break_time_start" type="TIME"/>
-            <column name="break_time_end" type="TIME"/>
+            <column name="break_time_id" type="BIGINT">
+                <constraints foreignKeyName="FK_place_break_time" references="break_time (id)"/>
+            </column>
             <column name="week_day" type="TINYINT"/>
         </createTable>
         <rollback>
@@ -57,13 +70,15 @@
     </changeSet>
 
     <!-- Table for place locations -->
-    <changeSet id="create-table-place-locations1" author="Maryna Chekhovska">
+    <changeSet id="create-table-place-locations2" author="Maryna Chekhovska">
         <createTable tableName="place_locations">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="lat" type="DOUBLE"/>
             <column name="lng" type="DOUBLE"/>
+            <column name="address" type="VARCHAR(255)"/>
+
         </createTable>
         <rollback>
             <dropTable tableName="place_locations"/>
@@ -103,6 +118,49 @@
         </createTable>
         <rollback>
             <dropTable tableName="places_images"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Table for discount values -->
+    <changeSet id="create-table-discount_value" author="Maryna Chekhovska">
+        <createTable tableName="discount_values">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="value" type="INTEGER"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="discount_values"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Table for discounts specifications -->
+    <changeSet id="create-table-discounts_specifications" author="Maryna Chekhovska">
+        <createTable tableName="discounts_specifications">
+            <column name="discount_value_id" type="BIGINT">
+                <constraints foreignKeyName="FK_discount_value_id" references="discount_values (id)"/>
+            </column>
+            <column name="specifications_id" type="BIGINT">
+                <constraints foreignKeyName="FK_discount_specifications_id" references="specifications (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="discounts_specifications"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Table for place discounts -->
+    <changeSet id="create-table-place-discount" author="Maryna Chekhovska">
+        <createTable tableName="place_discount">
+            <column name="place_id" type="BIGINT">
+                <constraints foreignKeyName="FK_places_discount_id" references="places (id)"/>
+            </column>
+            <column name="discount_value_id" type="BIGINT">
+                <constraints foreignKeyName="FK_place_discount_value_id" references="discount_values (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="place_discount"/>
         </rollback>
     </changeSet>
 </databaseChangeLog>
