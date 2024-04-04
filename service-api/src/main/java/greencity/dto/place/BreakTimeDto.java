@@ -2,6 +2,8 @@ package greencity.dto.place;
 
 import lombok.*;
 
+import java.time.LocalTime;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -11,7 +13,8 @@ import lombok.*;
 @EqualsAndHashCode
 public class BreakTimeDto {
 
-    private String endTime;
+    private LocalTime endTime;
 
-    private String startTime;
+
+    private LocalTime startTime;
 }

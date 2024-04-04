@@ -22,6 +22,7 @@ public class OpeningHours {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "place_id")
     private Place place;
 
     @Column
@@ -30,7 +31,7 @@ public class OpeningHours {
     @Column
     private LocalTime closeTime;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private BreakTime breakTime;
 
     @Column

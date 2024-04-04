@@ -4,6 +4,7 @@ import greencity.enums.PlaceStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,11 +33,11 @@ public class Place {
     @ManyToOne
     private Category category;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private PlaceLocations location;
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
-    private List<OpeningHours> openingHours;
+    private List<OpeningHours> openingHours = new ArrayList<>();
 
     @ManyToOne
     private User author;
@@ -46,9 +47,10 @@ public class Place {
             name = "place_discount",
             joinColumns = @JoinColumn(name = "place_id"),
             inverseJoinColumns = @JoinColumn(name = "discount_value_id"))
-    private Set<DiscountValue> discountValues;
+    private Set<DiscountValue> discountValues = new HashSet<>();
 
     @Column
+    @Enumerated(EnumType.STRING)
     private PlaceStatus status;
 
     @ManyToMany
@@ -59,5 +61,17 @@ public class Place {
     private Set<User> favorites = new HashSet<>();
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
-    private List<PlacesImages> placesImages;
+    private List<PlacesImages> placesImages = new ArrayList<>();
+
+    public Place(String name, String titleImage, PlaceStatus status) {
+        this.name = name;
+        this.titleImage = titleImage;
+        this.status = status;
+    }
+
+    public void addOpeningHours(List<OpeningHours> openingHours){
+        openingHours.forEach(h -> h.setPlace(this));
+        this.openingHours = openingHours;
+    }
+
 }

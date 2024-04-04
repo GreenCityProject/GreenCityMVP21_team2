@@ -287,6 +287,8 @@ public class SecurityConfig {
                                 "/user/all",
                                 "/user/roles")
                         .hasAnyRole(ADMIN, MODERATOR)
+                        .requestMatchers(HttpMethod.POST,"/place/v2/save")
+                        .hasAnyRole(ADMIN,USER,MODERATOR,UBS_EMPLOYEE)
                         .requestMatchers(HttpMethod.POST,
                                 "/place/filter/predicate")
                         .hasAnyRole(ADMIN, MODERATOR)

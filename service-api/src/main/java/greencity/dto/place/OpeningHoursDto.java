@@ -1,6 +1,9 @@
 package greencity.dto.place;
 
+import greencity.enums.WeekDay;
 import lombok.*;
+
+import java.time.LocalTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -10,12 +13,13 @@ import lombok.*;
 @Builder
 @EqualsAndHashCode
 public class OpeningHoursDto {
-
     private BreakTimeDto breakTime;
 
-    private String closeTime;
 
-    private String openTime;
+    private LocalTime closeTime;
 
-    private String weekDay;
+
+    private LocalTime openTime;
+
+    private WeekDay weekDay;
 }

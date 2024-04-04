@@ -24,6 +24,11 @@ public final class AppConstant {
     public static final int LATEST_NOTIFICATION_SIZE = 3;
     public static final String LATEST_NOTIFICATION_SORT_FIELD = "createdAt";
 
+    public static final String ENGLISH_GOOGLE_LANG_CODE = "en";
+    public static final String UKRAINIAN_GOOGLE_LANG_CODE = "uk";
+
+
+
     private AppConstant() {
     }
 }
