@@ -3,11 +3,13 @@ package greencity.service;
 import greencity.constant.ErrorMessage;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.events.*;
+import greencity.dto.notification.NotificationDto;
 import greencity.dto.tag.TagTranslationVO;
 import greencity.dto.tag.TagUaEnDto;
 import greencity.dto.tag.TagVO;
 import greencity.dto.user.UserVO;
 import greencity.entity.*;
+import greencity.enums.NotificationType;
 import greencity.enums.Role;
 import greencity.enums.TagType;
 import greencity.exception.exceptions.BadRequestException;
@@ -15,10 +17,7 @@ import greencity.exception.exceptions.NotFoundException;
 import greencity.exception.exceptions.NotSavedException;
 import greencity.filters.EventSpecification;
 import greencity.filters.SearchCriteria;
-import greencity.repository.EventDateLocationsRepo;
-import greencity.repository.EventsImagesRepo;
-import greencity.repository.EventsRepo;
-import greencity.repository.UserRepo;
+import greencity.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.EnableCaching;
@@ -52,6 +51,7 @@ public class EventsServiceImpl implements EventsService {
     private int maxDateLocationListSize = 7;
     private String defaultImage = "https://csb10032000a548f571" +
             ".blob.core.windows.net/allfiles/e95283db-3f71-4867-95cd-e28bf0a6afebillustration-earth.png";
+    private final NotificationService notificationService;
 
     @Override
     public EventDto save(AddEventDtoRequest addEventDtoRequest, List<MultipartFile> images, Long userId) {
@@ -165,7 +165,16 @@ public class EventsServiceImpl implements EventsService {
         } catch (DataIntegrityViolationException e) {
             throw new NotSavedException(ErrorMessage.EVENTS_NOT_SAVED);
         }
+        createUpdatedEventNotification(user, events);
+
         return eventDto;
+    }
+
+    private void createUpdatedEventNotification(UserVO user, Events events) {
+        events.getEventAttender().forEach(u -> {
+            NotificationDto notification = new NotificationDto(user, NotificationType.UPDATED_EVENT,mapToUserVO(u), events.getId());
+            notificationService.createNotification(notification);
+        });
     }
 
     @Override
@@ -324,8 +333,8 @@ public class EventsServiceImpl implements EventsService {
 
     private void setImagesInEventDto (EventDto eventDto, List<MultipartFile> images){
         if (images != null) {
-            eventDto.setTitleImage(fileService.upload(images.getFirst()));
-            images.removeFirst();
+            eventDto.setTitleImage(fileService.upload(images.get(0)));
+            images.remove(0);
             eventDto.setAdditionalImages(images.stream()
                     .map(fileService::upload)
                     .collect(Collectors.toList()));
@@ -457,5 +466,9 @@ public class EventsServiceImpl implements EventsService {
                     .value(value)
                     .build());
         }
+    }
+
+    private UserVO mapToUserVO(User user){
+        return modelMapper.map(user, UserVO.class);
     }
 }

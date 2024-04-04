@@ -2,7 +2,7 @@ package greencity.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import greencity.dto.notification.NotificationDto;
+import greencity.dto.notification.NotificationVO;
 import greencity.dto.user.UserVO;
 import greencity.exception.exceptions.NotFoundException;
 import greencity.exception.exceptions.UserHasNoPermissionToAccessException;
@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
-import java.util.Objects;
 
 import static greencity.ModelUtils.*;
 import static java.util.Collections.*;
@@ -61,7 +60,7 @@ public class NotificationControllerTest {
     void getAllTest_withCorrectParameters_expectSuccess() throws Exception {
         UserVO user = new UserVO();
         user.setId(1L);
-        List<NotificationDto> notifications = singletonList(getNotificationDto());
+        List<NotificationVO> notifications = singletonList(getNotificationDto());
 
         when(notificationService.getAllNotifications(any())).thenReturn(notifications);
 
@@ -75,7 +74,7 @@ public class NotificationControllerTest {
     void getLatestNotificationsTest_withCorrectParameters_expectSuccess() throws Exception {
         UserVO user = new UserVO();
         user.setId(1L);
-        List<NotificationDto> notifications = singletonList(getNotificationDto());
+        List<NotificationVO> notifications = singletonList(getNotificationDto());
 
         when(notificationService.getLatestUnreadNotifications(any())).thenReturn(notifications);
 
@@ -117,14 +116,14 @@ public class NotificationControllerTest {
 
     @Test
     void changeNotificationStatusToRead_withCorrectParameters_expectSuccess() throws Exception {
-        NotificationDto notificationDto = getNotificationDto();
+        NotificationVO notificationVO = getNotificationDto();
 
-        when(notificationService.changeStatusToRead(any(), any())).thenReturn(notificationDto);
+        when(notificationService.changeStatusToRead(any(), any())).thenReturn(notificationVO);
 
         mockMvc.perform(MockMvcRequestBuilders.patch("/notifications/1/read")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().json(writeAsString(notificationDto)));
+                .andExpect(content().json(writeAsString(notificationVO)));
     }
 
     @Test
@@ -148,14 +147,14 @@ public class NotificationControllerTest {
 
     @Test
     void changeNotificationStatusToUnreadTest() throws Exception {
-        NotificationDto notificationDto = getNotificationDto();
+        NotificationVO notificationVO = getNotificationDto();
 
-        when(notificationService.changeStatusToUnread(any(), any())).thenReturn(notificationDto);
+        when(notificationService.changeStatusToUnread(any(), any())).thenReturn(notificationVO);
 
         mockMvc.perform(MockMvcRequestBuilders.patch("/notifications/1/unread")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().json(writeAsString(notificationDto)));
+                .andExpect(content().json(writeAsString(notificationVO)));
     }
 
     @Test

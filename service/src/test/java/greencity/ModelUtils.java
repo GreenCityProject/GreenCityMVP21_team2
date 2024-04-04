@@ -9,7 +9,7 @@ import greencity.dto.habitfact.*;
 import greencity.dto.language.LanguageDTO;
 import greencity.dto.language.LanguageTranslationDTO;
 import greencity.dto.language.LanguageVO;
-import greencity.dto.notification.NotificationDto;
+import greencity.dto.notification.NotificationVO;
 import greencity.dto.ownsecurity.OwnSecurityVO;
 import greencity.dto.search.SearchNewsDto;
 import greencity.dto.shoppinglistitem.CustomShoppingListItemResponseDto;
@@ -684,9 +684,9 @@ public class ModelUtils {
                 .build();
     }
 
-    public static NotificationDto getNotificationDto() {
+    public static NotificationVO getNotificationDto() {
         var notification = getNotification();
-        return NotificationDto.builder()
+        return NotificationVO.builder()
                 .id(notification.getId())
                 .createdAt(notification.getCreatedAt())
                 .relatedEntityId(1L)

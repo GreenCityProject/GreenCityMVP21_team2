@@ -2,7 +2,7 @@ package greencity.controller;
 
 import greencity.annotations.CurrentUser;
 import greencity.constant.HttpStatuses;
-import greencity.dto.notification.NotificationDto;
+import greencity.dto.notification.NotificationVO;
 import greencity.dto.user.UserVO;
 import greencity.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,7 +25,7 @@ public class NotificationController {
     /**
      * Method retrieves all notifications of currentUser
      *
-     * @return new {@link List<NotificationDto>}
+     * @return new {@link List<NotificationVO>}
      * @author DenysRyhal
      */
     @Operation(summary = "Get all notifications of current user")
@@ -35,14 +35,14 @@ public class NotificationController {
             @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
     })
     @GetMapping
-    public List<NotificationDto> getAll(@CurrentUser UserVO userVO){
+    public List<NotificationVO> getAll(@CurrentUser UserVO userVO){
         return notificationService.getAllNotifications(userVO.getId());
     }
 
     /**
      * Method retrieves the latest unread notifications of currentUser
      *
-     * @return new {@link List<NotificationDto>}
+     * @return new {@link List<NotificationVO>}
      * @author DenysRyhal
      */
     @Operation(summary = "Get latest unread notifications of current user")
@@ -52,7 +52,7 @@ public class NotificationController {
             @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
     })
     @GetMapping("/latest")
-    public List<NotificationDto> getLatestNotifications(@Parameter(hidden = true) @CurrentUser UserVO userVO){
+    public List<NotificationVO> getLatestNotifications(@Parameter(hidden = true) @CurrentUser UserVO userVO){
         return notificationService.getLatestUnreadNotifications(userVO.getId());
     }
 
@@ -81,7 +81,7 @@ public class NotificationController {
      *
      * @param id {@link Long} notification id
      * @author DenysRyhal
-     * @return {@link ResponseEntity<NotificationDto>}
+     * @return {@link ResponseEntity<NotificationVO>}
      */
     @Operation(summary = "mark notification UNREAD by id")
     @ApiResponses(value = {
@@ -91,8 +91,8 @@ public class NotificationController {
             @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN),
     })
     @PatchMapping("/{id}/read")
-    public ResponseEntity<NotificationDto> changeNotificationStatusToRead(@Parameter(hidden = true) @CurrentUser UserVO user,
-                                                            @PathVariable Long id){
+    public ResponseEntity<NotificationVO> changeNotificationStatusToRead(@Parameter(hidden = true) @CurrentUser UserVO user,
+                                                                         @PathVariable Long id){
         var notification = notificationService.changeStatusToRead(id,user);
         return ResponseEntity.ok(notification);
     }
@@ -102,7 +102,7 @@ public class NotificationController {
      *
      * @param id {@link Long} notification id
      * @author DenysRyhal
-     * @return {@link ResponseEntity<NotificationDto>}
+     * @return {@link ResponseEntity<NotificationVO>}
      */
     @Operation(summary = "mark notification UNREAD by id")
     @ApiResponses(value = {
@@ -112,8 +112,8 @@ public class NotificationController {
             @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN),
     })
     @PatchMapping("/{id}/unread")
-    public ResponseEntity<NotificationDto> changeNotificationStatusToUnread(@Parameter(hidden = true) @CurrentUser UserVO user,
-                                                    @PathVariable Long id){
+    public ResponseEntity<NotificationVO> changeNotificationStatusToUnread(@Parameter(hidden = true) @CurrentUser UserVO user,
+                                                                           @PathVariable Long id){
         var notification = notificationService.changeStatusToUnread(id,user);
         return ResponseEntity.ok(notification);
     }

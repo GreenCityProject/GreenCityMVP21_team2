@@ -5,6 +5,8 @@ import greencity.dto.PageableDto;
 import greencity.dto.eventscomment.AddEventCommentDtoRequest;
 import greencity.dto.eventscomment.AmountCommentLikesDto;
 import greencity.dto.eventscomment.EventCommentDto;
+import greencity.dto.notification.NotificationDto;
+import greencity.dto.notification.TaggedUserNotificationDto;
 import greencity.dto.user.UserVO;
 import greencity.entity.EventComment;
 import greencity.entity.Events;
@@ -26,29 +28,53 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static greencity.enums.NotificationType.*;
+
 @Service
 @EnableCaching
 @RequiredArgsConstructor
 public class EventCommentServiceImpl implements EventCommentService{
-
     private final EventsRepo eventsRepo;
     private final EventCommentRepo eventCommentRepo;
     private final UserRepo userRepo;
     private final ModelMapper modelMapper;
+    private final NotificationService notificationService;
+    private final TaggedUsersService taggedUsersService;
 
     @Override
     public AddEventCommentDtoRequest save(AddEventCommentDtoRequest addEventCommentDtoRequest, Long eventId,
                                           UserVO userVO) {
         Events event = eventsRepo.findById(eventId).get();
         EventComment eventComment = modelMapper.map(addEventCommentDtoRequest, EventComment.class);
-        eventComment.setAuthor(modelMapper.map(userVO, User.class));
         eventComment.setEvent(event);
         eventComment.setCreatedDate(ZonedDateTime.now());
         Long parentCommentId = addEventCommentDtoRequest.getEventParentCommentId();
         if (parentCommentId != null && parentCommentId != 0){
             eventComment.setEventParentComment(eventCommentRepo.findById(parentCommentId).get());
+            UserVO commentOwner = mapToUserVO(eventComment.getEventParentComment().getAuthor());
+            createCommentReplyNotification(userVO,commentOwner,parentCommentId);
         }
+        createCommentedEventNotification(userVO,event);
+        createTaggedUserNotification(userVO,eventId, addEventCommentDtoRequest.getText());
+
         return modelMapper.map(eventCommentRepo.save(eventComment), AddEventCommentDtoRequest.class);
+    }
+
+    private void createCommentReplyNotification(UserVO userVO, UserVO commentOwner, Long parentCommentId) {
+        NotificationDto notification = new NotificationDto(userVO, REPLIED_EVENT_COMMENT, commentOwner, parentCommentId);
+        notificationService.createNotification(notification);
+    }
+
+    private void createCommentedEventNotification(UserVO userVO, Events event) {
+        NotificationDto notification = new NotificationDto(userVO, LIKED_EVENT, mapToUserVO(event.getOrganizer()), event.getId());
+        notificationService.createNotification(notification);
+    }
+
+    private void createTaggedUserNotification(UserVO userVO, Long eventId, String text) {
+        List<UserVO> taggedUsers = taggedUsersService.findTaggedUsersFromText(text);
+        TaggedUserNotificationDto notification = new TaggedUserNotificationDto(userVO, TAGGED_USER_UNDER_EVENT ,
+                taggedUsers, eventId);
+        notificationService.createTaggedUserInCommentNotification(notification);
     }
 
     @Override
@@ -83,10 +109,17 @@ public class EventCommentServiceImpl implements EventCommentService{
             usersLikedSet.remove(currentUser);
         } else {
             usersLikedSet.add(currentUser);
+            createLikenEventCommentNotification(userVO,id,eventComment.getAuthor());
         }
         eventComment.setUsersLiked(usersLikedSet);
         eventCommentRepo.save(eventComment);
     }
+
+    private void createLikenEventCommentNotification(UserVO userVO, Long id, User receiver) {
+        NotificationDto notification = new NotificationDto(userVO,LIKED_EVENT_COMMENT,mapToUserVO(receiver),id);
+        notificationService.createNotification(notification);
+    }
+
     @Override
     public Integer getCountOfComments (Long id){
         return eventCommentRepo.countByEventId(id);
@@ -156,5 +189,9 @@ public class EventCommentServiceImpl implements EventCommentService{
         eventCommentDto.setNumberOfLikes(usersLikedSet.size());
         eventCommentDto.setNumberOfReplies(getCountOfActiveReplies(eventComment.getId()));
         return eventCommentDto;
+    }
+
+    private UserVO mapToUserVO(User user) {
+        return modelMapper.map(user, UserVO.class);
     }
 }
