@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Table for places -->
+    <changeSet id="create-table-places4" author="Maryna Chekhovska">
+        <createTable tableName="places">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(70)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name_en" type="VARCHAR(70)"/>
+            <column name="title_image" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category_id" type="BIGINT">
+                <constraints foreignKeyName="FK_places_category" references="categories (id)"/>
+            </column>
+            <column name="location_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="author_id" type="BIGINT">
+                <constraints foreignKeyName="FK_places_author" references="users (id)"/>
+            </column>
+<!--            <column name="discountValues" type="INTEGER"/>-->
+            <column name="status" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="places"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Table for places opening hours -->
+    <changeSet id="create-table-opening-hours3" author="Maryna Chekhovska">
+        <createTable tableName="opening_hours">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="place_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="FK_place_opening_hours" references="places (id)"/>
+            </column>
+            <column name="open_time" type="TIME"/>
+            <column name="close_time" type="TIME"/>
+            <column name="break_time_start" type="TIME"/>
+            <column name="break_time_end" type="TIME"/>
+            <column name="week_day" type="TINYINT"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="opening_hours"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Table for place locations -->
+    <changeSet id="create-table-place-locations1" author="Maryna Chekhovska">
+        <createTable tableName="place_locations">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="lat" type="DOUBLE"/>
+            <column name="lng" type="DOUBLE"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="place_locations"/>
+        </rollback>
+        <addForeignKeyConstraint baseTableName="places"
+                                 baseColumnNames="location_id"
+                                 constraintName="FK_place_locations"
+                                 referencedTableName="place_locations"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- Table for places favorites -->
+    <changeSet id="create-table-places-favorite" author="Maryna Chekhovska">
+        <createTable tableName="places_favorite">
+            <column name="place_id" type="BIGINT">
+                <constraints foreignKeyName="FK_places_favorite_id" references="places (id)"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints foreignKeyName="FK_user_places_favorite" references="users (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="places_favorite"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Table for places images -->
+    <changeSet id="create-table-places-images" author="Maryna Chekhovska">
+        <createTable tableName="places_images">
+            <column name="id" autoIncrement="true" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name ="link" type="VARCHAR"/>
+            <column name="place_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_image_place" references="places (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="places_images"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
