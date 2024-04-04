@@ -415,13 +415,12 @@ public class RestClient {
      * @param userVO for save User.
      * @author Orest Mamchuk
      */
-    public void save(UserVO userVO, String accessToken) {
+    public void save (UserVO userVO, String accessToken) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set(AUTHORIZATION, accessToken);
+        headers.set("Authorization", accessToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<UserVO> entity = new HttpEntity<>(userVO, headers);
-        restTemplate.exchange(greenCityUserServerAddress
-            + RestTemplateLinks.USER, HttpMethod.POST, entity, Object.class)
-            .getBody();
+        restTemplate.postForEntity(greenCityUserServerAddress + RestTemplateLinks.USER, entity, UserVO.class);
     }
 
     /**

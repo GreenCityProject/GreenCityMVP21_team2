@@ -1,5 +1,6 @@
 package greencity.service;
 
+import greencity.annotations.RatingCalculationEnum;
 import greencity.constant.ErrorMessage;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.events.*;
@@ -15,10 +16,12 @@ import greencity.exception.exceptions.NotFoundException;
 import greencity.exception.exceptions.NotSavedException;
 import greencity.filters.EventSpecification;
 import greencity.filters.SearchCriteria;
+import greencity.rating.RatingCalculation;
 import greencity.repository.EventDateLocationsRepo;
 import greencity.repository.EventsImagesRepo;
 import greencity.repository.EventsRepo;
 import greencity.repository.UserRepo;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.EnableCaching;
@@ -36,6 +39,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static greencity.constant.AppConstant.AUTHORIZATION;
+
 @Service
 @EnableCaching
 @RequiredArgsConstructor
@@ -48,6 +53,8 @@ public class EventsServiceImpl implements EventsService {
     private final ModelMapper modelMapper;
     private final TagsService tagService;
     private final FileService fileService;
+    private final RatingCalculation ratingCalculation;
+    private final HttpServletRequest httpServletRequest;
     private int maxImagesListSize = 6;
     private int maxDateLocationListSize = 7;
     private String defaultImage = "https://csb10032000a548f571" +
@@ -139,7 +146,7 @@ public class EventsServiceImpl implements EventsService {
 
     @Override
     public EventDto update(EventDtoToUpdate eventDtoToUpdate, List<MultipartFile> images,  UserVO user) {
-        EventDto eventDto = converterEventDtoYoUpdateToEventDto(eventDtoToUpdate);
+        EventDto eventDto = converterEventDtoToUpdateToEventDto(eventDtoToUpdate);
         Long eventId = eventDto.getId();
         Events events = eventsRepo.findById(eventId).get();
         if (user.getRole() != Role.ROLE_ADMIN && !user.getId().equals(events.getOrganizer().getId())) {
@@ -250,6 +257,9 @@ public class EventsServiceImpl implements EventsService {
                 int currentUserVotes = eventRatingUserVotes.size();
                 newRating = (((currentRating * currentUserVotes) + grade) / (currentUserVotes + 1));
             }
+            String accessToken = httpServletRequest.getHeader(AUTHORIZATION);
+            ratingCalculation.ratingCalculation(getRatingEventOrganizer(grade),
+                            modelMapper.map(event.getOrganizer(), UserVO.class), accessToken);
             eventRatingUserVotes.add(user);
             event.setRating(newRating);
             event.setEventRatingUserVotes(eventRatingUserVotes);
@@ -355,7 +365,7 @@ public class EventsServiceImpl implements EventsService {
         return eventDto;
     }
 
-    private EventDto converterEventDtoYoUpdateToEventDto (EventDtoToUpdate eventDtoToUpdate){
+    private EventDto converterEventDtoToUpdateToEventDto (EventDtoToUpdate eventDtoToUpdate){
         List<TagVO> tagVOS = tagService.findTagsByNamesAndType(
                 eventDtoToUpdate.getTags(), TagType.EVENT);
         return EventDto.builder()
@@ -457,5 +467,10 @@ public class EventsServiceImpl implements EventsService {
                     .value(value)
                     .build());
         }
+    }
+
+    private RatingCalculationEnum getRatingEventOrganizer(int grade){
+        return grade == 1 ? RatingCalculationEnum.EVENTS_RATING_1 :
+                grade == 2 ? RatingCalculationEnum.EVENTS_RATING_2 : RatingCalculationEnum.EVENTS_RATING_3;
     }
 }
