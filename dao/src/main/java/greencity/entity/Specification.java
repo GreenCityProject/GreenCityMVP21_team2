@@ -18,4 +18,7 @@ public class Specification {
 
     @Column(nullable = false, unique = true, length = 100)
     private String name;
+
+    @ManyToOne
+    private DiscountValue discountValue;
 }

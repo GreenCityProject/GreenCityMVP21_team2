@@ -144,6 +144,7 @@ public class SecurityConfig {
                                 "/econews/comments/count/likes",
                                 "/econews/comments/replies/active/{parentCommentId}",
                                 "/econews/comments/active",
+                                "/place/info/{id}",
                                 "/language",
                                 "/search",
                                 "/search/econews",

@@ -1,13 +1,16 @@
 package greencity.dto.specification;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import jakarta.validation.constraints.NotBlank;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
+@ToString
+@Builder
+@EqualsAndHashCode
 public class SpecificationNameDto {
     @NotBlank
     private String name;
