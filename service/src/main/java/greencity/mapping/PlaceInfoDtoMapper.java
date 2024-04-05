@@ -1,5 +1,6 @@
 package greencity.mapping;
 
+import greencity.dto.comment.CommentDto;
 import greencity.dto.place.*;
 import greencity.dto.specification.SpecificationNameDto;
 import greencity.entity.Place;
@@ -38,6 +39,10 @@ public class PlaceInfoDtoMapper extends AbstractConverter<Place, PlaceInfoDto> {
                                 .closeTime(openingHours.getCloseTime())
                                 .weekDay(openingHours.getWeekDay().toString())
                                 .build())
+                        .toList())
+                .comments(place.getPlaceComments().stream().map(comment -> CommentDto.builder()
+                        .text(comment.getText())
+                        .build())
                         .toList())
                 .build();
     }

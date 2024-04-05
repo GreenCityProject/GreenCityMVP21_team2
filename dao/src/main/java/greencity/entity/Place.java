@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.type.descriptor.jdbc.IntegerJdbcType;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,11 +35,11 @@ public class Place {
     @ManyToOne
     private Category category;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private PlaceLocations location;
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
-    private List<OpeningHours> openingHours;
+    private List<OpeningHours> openingHours = new ArrayList<>();
 
     @ManyToOne
     private User author;
@@ -48,7 +49,7 @@ public class Place {
             name = "place_discount",
             joinColumns = @JoinColumn(name = "place_id"),
             inverseJoinColumns = @JoinColumn(name = "specifications_id"))
-    private Set<Specification> discountValues;
+    private Set<Specification> discountValues = new HashSet<>();
 
     @Column
     @JdbcType(IntegerJdbcType.class)
@@ -65,7 +66,10 @@ public class Place {
     private Set<User> favorites = new HashSet<>();
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
-    private List<PlacesImages> placesImages;
+    private List<PlacesImages> placesImages= new ArrayList<>();
+
+    @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
+    private List<Comment> placeComments = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
