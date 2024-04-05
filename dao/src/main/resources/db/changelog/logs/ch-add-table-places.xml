@@ -91,6 +91,14 @@
                                  referencedColumnNames="id"/>
     </changeSet>
 
+    <changeSet id="add-address_ua-column-to-location" author="Denys Ryhal">
+        <addColumn tableName="place_locations">
+            <column name="address_ua" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
     <!-- Table for places favorites -->
     <changeSet id="create-table-places-favorite" author="Maryna Chekhovska">
         <createTable tableName="places_favorite">

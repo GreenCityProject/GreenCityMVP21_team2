@@ -29,6 +29,8 @@ public final class ErrorMessage {
     public static final String CATEGORY_NOT_FOUND_BY_NAME = "The category does not exist by this name: ";
     public static final String CATEGORY_ALREADY_EXISTS_BY_THIS_NAME = "Category by this name already exists.";
     public static final String CANNOT_ADD_PARENT_CATEGORY = "The category cannot be added to no-parent category";
+    public static final String CATEGORY_NOT_FOUND_BY_NAME_OR_NAME_UA = "Category doesn't exist by  name or nameUa : ";
+
 
     public static final String TAG_NOT_DELETED = "Tag not deleted by id : ";
     public static final String TAG_NOT_FOUND = "Tag not found by id : ";
@@ -140,6 +142,8 @@ public final class ErrorMessage {
     public static final String INVALID_DURATION = "The duration for such habit is lower than previously set";
 
     public static final String NOTIFICATION_NOT_FOUND_BY_ID = "Notification doesn't exist by this id: ";
+    public static final String GEOCODE_LOADING_FAILED = "Attempt failed to geocode address: ";
+    public static final String GEOCODE_NOT_FOUND_BY_ADDRESS = "Geocode doesn't exist by address: ";
 
     private ErrorMessage() {
     }

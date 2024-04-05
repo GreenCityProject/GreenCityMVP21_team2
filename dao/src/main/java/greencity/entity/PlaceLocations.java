@@ -26,4 +26,7 @@ public class PlaceLocations {
 
     @Column
     private String address;
+
+    @Column
+    private String addressUa;
 }
