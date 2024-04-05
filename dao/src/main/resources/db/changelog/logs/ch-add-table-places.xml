@@ -5,7 +5,7 @@
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <!-- Table for places -->
-    <changeSet id="create-table-places5" author="Maryna Chekhovska">
+    <changeSet id="create-table-places6" author="Maryna Chekhovska">
         <createTable tableName="places">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -28,6 +28,7 @@
             <column name="status" type="TINYINT">
                 <constraints nullable="false"/>
             </column>
+            <column name="rating" type="DOUBLE"/>
         </createTable>
         <rollback>
             <dropTable tableName="places"/>
@@ -169,6 +170,21 @@
         </createTable>
         <rollback>
             <dropTable tableName="place_discount"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Table for tracking user votes for place ratings -->
+    <changeSet id="create-table-place_rating_user_votes" author="Maryna Chekhovska">
+        <createTable tableName="place_rating_user_votes">
+            <column name="place_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_place_rating_id" references="places (id)"/>
+            </column>
+            <column name="user_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_user_place_rating" references="users (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="place_rating_user_votes"/>
         </rollback>
     </changeSet>
 </databaseChangeLog>

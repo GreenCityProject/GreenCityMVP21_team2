@@ -53,6 +53,9 @@ public class Place {
     @Enumerated(EnumType.STRING)
     private PlaceStatus status;
 
+    @Column
+    private Double rating;
+
     @ManyToMany
     @JoinTable(
             name = "places_favorite",
@@ -61,7 +64,14 @@ public class Place {
     private Set<User> favorites = new HashSet<>();
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
-    private List<PlacesImages> placesImages = new ArrayList<>();
+    private List<PlacesImages> placesImages;
+
+    @ManyToMany
+    @JoinTable(
+            name = "place_rating_user_votes",
+            joinColumns = @JoinColumn(name = "place_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private Set<User> placeRatingUserVotes = new HashSet<>();
 
     public Place(String name, String titleImage, PlaceStatus status) {
         this.name = name;
