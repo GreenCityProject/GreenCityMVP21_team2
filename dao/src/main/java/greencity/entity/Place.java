@@ -3,6 +3,8 @@ package greencity.entity;
 import greencity.enums.PlaceStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.type.descriptor.jdbc.IntegerJdbcType;
 
 import java.util.HashSet;
 import java.util.List;
@@ -45,10 +47,11 @@ public class Place {
     @JoinTable(
             name = "place_discount",
             joinColumns = @JoinColumn(name = "place_id"),
-            inverseJoinColumns = @JoinColumn(name = "discount_value_id"))
-    private Set<DiscountValue> discountValues;
+            inverseJoinColumns = @JoinColumn(name = "specifications_id"))
+    private Set<Specification> discountValues;
 
     @Column
+    @JdbcType(IntegerJdbcType.class)
     private PlaceStatus status;
 
     @Column
