@@ -3,6 +3,8 @@ package greencity.entity;
 import greencity.enums.WeekDay;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.type.descriptor.jdbc.IntegerJdbcType;
 
 import java.time.LocalTime;
 
@@ -35,5 +37,6 @@ public class OpeningHours {
     private BreakTime breakTime;
 
     @Column
+    @JdbcType(IntegerJdbcType.class)
     private WeekDay weekDay;
 }
