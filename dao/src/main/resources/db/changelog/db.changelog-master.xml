@@ -180,5 +180,6 @@
     <include file="db/changelog/logs/ch-add-table-event-comment-Chekhovska.xml"/>
     <include file="db/changelog/logs/ch-add-table-notification.xml"/>
     <include file="db/changelog/logs/ch-add-table-places.xml"/>
+    <include file="db/changelog/logs/ch-add-column-estimate-to-comments-table.xml"/>
 </databaseChangeLog>
 
