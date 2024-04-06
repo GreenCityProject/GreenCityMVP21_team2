@@ -44,4 +44,7 @@ public class Comment {
 
     @ManyToOne
     private Place place;
+
+    @Column
+    private Byte estimate;
 }
