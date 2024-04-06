@@ -146,6 +146,8 @@ public class SecurityConfig {
                                 "/econews/comments/active",
                                 "/place/info/{id}",
                                 "/place/about/{id}",
+                                "/comments",
+                                "/comments/{id}",
                                 "/language",
                                 "/search",
                                 "/search/econews",
@@ -225,6 +227,7 @@ public class SecurityConfig {
                                 "/events/rateEvent/{eventId}/{grade}",
                                 "/events/comments/{eventId}",
                                 "/events/comments/like",
+                                "/place/{placeId}/comments",
                                 CUSTOM_SHOPPING_LIST_ITEMS,
                                 "/files/image",
                                 "/files/convert",
@@ -273,6 +276,7 @@ public class SecurityConfig {
                                 "/events/removeAttender/{eventId}",
                                 "/events/removeFromFavorites/{eventId}",
                                 "/events/comments/{eventCommentId}",
+                                "/comments",
                                 CUSTOM_SHOPPING_LIST_ITEMS,
                                 CUSTOM_SHOPPING_LIST_URL,
                                 "/favorite_place/{placeId}",
@@ -284,8 +288,6 @@ public class SecurityConfig {
                         .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
                         .requestMatchers(HttpMethod.GET,
                                 "/newsSubscriber",
-                                "/comments",
-                                "/comments/{id}",
                                 "/user/all",
                                 "/user/roles")
                         .hasAnyRole(ADMIN, MODERATOR)
