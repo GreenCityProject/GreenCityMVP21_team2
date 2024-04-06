@@ -11,13 +11,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import greencity.constant.HttpStatuses;
 import greencity.dto.place.PlaceInfoDto;
 import greencity.dto.place.PlaceUpdateDto;
-import greencity.service.PlaceService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,7 +50,6 @@ public class PlaceController {
                                    @RequestBody @Validated AddPlaceDto addPlace){
         return placeService.createPlace(user,addPlace);
     }
-    private final PlaceService placeService;
 
     /**
      * Method to getting {@link PlaceInfoDto} specified by id.

@@ -94,7 +94,7 @@ public final class ErrorMessage {
     public static final String USER_HAS_NO_PERMISSION = "Current user has no permission for this action";
     public static final String ECO_NEWS_NOT_FOUND_BY_ID = "Eco news doesn't exist by this id: ";
     public static final String EVENTS_NOT_FOUND_BY_ID = "Event doesn't exist by this id: ";
-
+    public static final String COMMENT_NOT_FOUND_BY_ID = "Comment doesn't exist by this id: ";
     public static final String PLACE_NOT_FOUND_BY_ID = "Place doesn't exist by this id: ";
     public static final String ECO_NEWS_NOT_FOUND = "Eco news haven't been found";
     public static final String ECO_NEWS_NOT_SAVED = "Eco news haven't been saved because of constraint violation";

@@ -39,7 +39,8 @@ public class PlaceCommentServiceImpl implements PlaceCommentService{
 
     @Override
     public CommentReturnDto getCommentById(Long id) {
-        return modelMapper.map(commentRepo.findById(id), CommentReturnDto.class);
+        return modelMapper.map(commentRepo.findById(id).orElseThrow(() ->
+                new NotFoundException(ErrorMessage.COMMENT_NOT_FOUND_BY_ID + id)), CommentReturnDto.class);
     }
 
     @Override
