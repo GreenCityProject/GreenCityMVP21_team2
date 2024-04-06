@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -74,7 +75,7 @@ public class PlaceCommentServiceImpl implements PlaceCommentService{
     private void setPlaceRating( Byte grade, Place place, UserVO userVO){
         User user = userRepo.findById(userVO.getId()).get();
         double rating;
-        List<User> placeRatingUserVotes = place.getPlaceRatingUserVotes();
+        Set<User> placeRatingUserVotes = place.getPlaceRatingUserVotes();
         if (place.getRating() == null){
             rating = grade.doubleValue();
         } else {
