@@ -181,4 +181,12 @@
             <dropTable tableName="place_rating_user_votes"/>
         </rollback>
     </changeSet>
+
+    <!-- Drop table for discounts specifications if it exists -->
+    <changeSet id="drop-table-discount_specifications" author="Maryna Chekhovska">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="discounts_specifications"/>
+        </preConditions>
+        <dropTable tableName="discounts_specifications"/>
+    </changeSet>
 </databaseChangeLog>
