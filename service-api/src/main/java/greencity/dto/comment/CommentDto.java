@@ -1,12 +1,15 @@
 package greencity.dto.comment;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
+@ToString
+@Builder
+@EqualsAndHashCode
 public class CommentDto {
     private String text;
 }

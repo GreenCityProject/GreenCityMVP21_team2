@@ -10,6 +10,9 @@ import greencity.enums.PlaceStatus;
 import greencity.exception.exceptions.NotFoundException;
 import greencity.repository.CategoryRepo;
 import greencity.repository.PlaceRepo;
+import greencity.dto.place.PlaceInfoDto;
+import greencity.dto.place.PlaceUpdateDto;
+import greencity.repository.PlaceRepo;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -92,6 +95,13 @@ public class PlaceServiceImpl implements PlaceService {
         return modelMapper.map(placeRepo.save(place), PlaceResponse.class);
     }
 
+    @Override
+    public PlaceInfoDto getInfo(Long id){
+        return modelMapper.map(placeRepo.findById(id), PlaceInfoDto.class);
+    }
 
-
+    @Override
+    public PlaceUpdateDto getPlaceById(Long id){
+        return modelMapper.map(placeRepo.findById(id), PlaceUpdateDto.class);
+    }
 }

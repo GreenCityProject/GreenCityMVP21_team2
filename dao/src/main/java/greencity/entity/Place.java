@@ -68,6 +68,9 @@ public class Place {
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
     private List<PlacesImages> placesImages;
 
+    @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
+    private List<Comment> placeComments = new ArrayList<>();
+
     @ManyToMany
     @JoinTable(
             name = "place_rating_user_votes",
@@ -85,5 +88,4 @@ public class Place {
         openingHours.forEach(h -> h.setPlace(this));
         this.openingHours = openingHours;
     }
-
 }
