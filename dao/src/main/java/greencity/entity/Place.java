@@ -76,7 +76,7 @@ public class Place {
             name = "place_rating_user_votes",
             joinColumns = @JoinColumn(name = "place_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<User> placeRatingUserVotes = new HashSet<>();
+    private List<User> placeRatingUserVotes = new ArrayList<>();
 
     public Place(String name, String titleImage, PlaceStatus status) {
         this.name = name;

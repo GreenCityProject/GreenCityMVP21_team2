@@ -9,7 +9,6 @@ import greencity.entity.Comment;
 import greencity.entity.Place;
 import greencity.entity.User;
 import greencity.exception.exceptions.NotFoundException;
-import greencity.exception.exceptions.NotSavedException;
 import greencity.exception.exceptions.UserHasNoPermissionToAccessException;
 import greencity.repository.CommentRepo;
 import greencity.repository.PlaceRepo;
@@ -21,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -74,26 +72,19 @@ public class PlaceCommentServiceImpl implements PlaceCommentService{
     }
 
     private void setPlaceRating( Byte grade, Place place, UserVO userVO){
-        Set<User> placeRatingUserVotes = place.getPlaceRatingUserVotes();
         User user = userRepo.findById(userVO.getId()).get();
-        if (placeRatingUserVotes.contains(user)){
-            throw new NotSavedException("You have already voted for this place.");
+        double rating;
+        List<User> placeRatingUserVotes = place.getPlaceRatingUserVotes();
+        if (place.getRating() == null){
+            rating = grade.doubleValue();
         } else {
-            if (grade != null){
-                double rating;
-
-                if (place.getRating() == null){
-                    rating = grade.doubleValue();
-                } else {
-                    double currentRating = place.getRating();
-                    int currentUserVotes = placeRatingUserVotes.size();
-                    rating = (((currentRating * currentUserVotes) + grade) / (currentUserVotes + 1));
-                }
-                placeRatingUserVotes.add(user);
-                place.setRating(rating);
-                place.setPlaceRatingUserVotes(placeRatingUserVotes);
-                placeRepo.save(place);
-            }
+            double currentRating = place.getRating();
+            int currentUserVotes = placeRatingUserVotes.size();
+            rating = (((currentRating * currentUserVotes) + grade) / (currentUserVotes + 1));
         }
+        placeRatingUserVotes.add(user);
+        place.setRating(rating);
+        place.setPlaceRatingUserVotes(placeRatingUserVotes);
+        placeRepo.save(place);
     }
 }
