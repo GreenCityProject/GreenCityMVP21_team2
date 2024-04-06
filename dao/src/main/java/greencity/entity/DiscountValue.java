@@ -19,11 +19,7 @@ public class DiscountValue {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany
-    @JoinTable(
-            name = "discounts_specifications",
-            joinColumns = @JoinColumn(name = "discount_value_id"),
-            inverseJoinColumns = @JoinColumn(name = "specifications_id"))
+    @OneToMany(mappedBy = "discountValue")
     private Set<Specification> specification;
 
     @Column
