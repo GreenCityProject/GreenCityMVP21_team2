@@ -49,7 +49,7 @@ public class Place {
             name = "place_discount",
             joinColumns = @JoinColumn(name = "place_id"),
             inverseJoinColumns = @JoinColumn(name = "specifications_id"))
-    private Set<Specification> discountValues = new HashSet<>();
+    private Set<Specification> discountValues;
 
     @Column
     @JdbcType(IntegerJdbcType.class)
@@ -66,7 +66,7 @@ public class Place {
     private Set<User> favorites = new HashSet<>();
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
-    private List<PlacesImages> placesImages= new ArrayList<>();
+    private List<PlacesImages> placesImages;
 
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL)
     private List<Comment> placeComments = new ArrayList<>();
@@ -77,4 +77,15 @@ public class Place {
             joinColumns = @JoinColumn(name = "place_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> placeRatingUserVotes = new HashSet<>();
+
+    public Place(String name, String titleImage, PlaceStatus status) {
+        this.name = name;
+        this.titleImage = titleImage;
+        this.status = status;
+    }
+
+    public void addOpeningHours(List<OpeningHours> openingHours){
+        openingHours.forEach(h -> h.setPlace(this));
+        this.openingHours = openingHours;
+    }
 }

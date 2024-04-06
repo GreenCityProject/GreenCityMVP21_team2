@@ -91,6 +91,14 @@
                                  referencedColumnNames="id"/>
     </changeSet>
 
+    <changeSet id="add-address_ua-column-to-location" author="Denys Ryhal">
+        <addColumn tableName="place_locations">
+            <column name="address_ua" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
     <!-- Table for places favorites -->
     <changeSet id="create-table-places-favorite" author="Maryna Chekhovska">
         <createTable tableName="places_favorite">
@@ -136,7 +144,7 @@
     </changeSet>
 
     <!-- Column for discounts value specifications -->
-    <changeSet id="create-column-discount_value_to_specifications" author="Yurii Zhurakovskyi">
+    <changeSet id="create-column-discount_value_to_specifications" author="Maryna Chekhovska">
         <addColumn tableName="specifications">
             <column name="discount_value_id" type="BIGINT">
                 <constraints foreignKeyName="FK_discount_value_id" references="discount_values (id)"/>
@@ -144,7 +152,7 @@
         </addColumn>
     </changeSet>
 
-        <!-- Table for place discounts -->
+    <!-- Table for place discounts -->
     <changeSet id="create-table-place-discount1" author="Maryna Chekhovska">
         <createTable tableName="place_discount">
             <column name="place_id" type="BIGINT">
