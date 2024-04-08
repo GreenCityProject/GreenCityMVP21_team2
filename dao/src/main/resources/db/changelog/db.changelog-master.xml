@@ -102,9 +102,7 @@
     <include file="db/changelog/logs/ch-add-column-to-crat-room-fedorkiv.xml"/>
     <include file="db/changelog/logs/ch-update-column-status-in-users_friends.xml"/>
     <include file="db/changelog/logs/ch-add-eco_news-Boiarchuk.xml"/>
-<!--    <include file="db/changelog/logs/ch-add-table-events-Bohonko.xml"/>-->
-    <include file="db/changelog/logs/ch-add-table-events-Chekhovska.xml"/>
-    <include file="db/changelog/logs/ch-add-table-event-comment-Chekhovska.xml"/>
+    <include file="db/changelog/logs/ch-add-table-events-Bohonko.xml"/>
     <include file="db/changelog/logs/ch-insert-into-languages-Kozak.xml"/>
     <include file="db/changelog/logs/ch-insert-into-categories-Kozak.xml"/>
     <include file="db/changelog/logs/ch-insert-into-fact-of-the-day-Kozak.xml"/>
@@ -178,6 +176,8 @@
     <include file="db/changelog/logs/ch-drop-places-table-Bokalo.xml"/>
     <include file="db/changelog/logs/ch-drop-news-subscribers-table-Bokalo.xml"/>
     <include file="db/changelog/logs/ch-drop-user-friends-table-Bokalo.xml"/>
+    <include file="db/changelog/logs/ch-add-table-events-Chekhovska.xml"/>
+    <include file="db/changelog/logs/ch-add-table-event-comment-Chekhovska.xml"/>
     <include file="db/changelog/logs/ch-add-table-notification.xml"/>
 </databaseChangeLog>
 
