@@ -1,22 +1,24 @@
 package greencity.service;
 
 import greencity.constant.ErrorMessage;
-import greencity.dto.place.AddPlaceDto;
-import greencity.dto.place.OpeningHoursDto;
-import greencity.dto.place.PlaceResponse;
+import greencity.dto.PageableDto;
+import greencity.dto.place.*;
 import greencity.dto.user.UserVO;
 import greencity.entity.*;
 import greencity.enums.PlaceStatus;
 import greencity.exception.exceptions.NotFoundException;
+import greencity.filters.PlaceSpecification;
+import greencity.filters.SearchCriteria;
 import greencity.repository.CategoryRepo;
-import greencity.repository.PlaceRepo;
-import greencity.dto.place.PlaceInfoDto;
-import greencity.dto.place.PlaceUpdateDto;
 import greencity.repository.PlaceRepo;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -103,5 +105,57 @@ public class PlaceServiceImpl implements PlaceService {
     @Override
     public PlaceUpdateDto getPlaceById(Long id){
         return modelMapper.map(placeRepo.findById(id), PlaceUpdateDto.class);
+    }
+
+    @Override
+    public PageableDto<PlaceInfoDto> filterPlaceBySearchPredicate(Pageable pageable, FilterPlaceDto filterDto){
+        Page<Place> placePage = placeRepo.findAll(getSpecification(filterDto), pageable);
+        return buildPageableDtoByPlaceInfoDto(placePage);
+    }
+
+    private PageableDto<PlaceInfoDto> buildPageableDtoByPlaceInfoDto(Page<Place> placePage){
+        List<PlaceInfoDto> placeInfoDtoList = placePage.stream()
+                .map(place -> modelMapper.map(place, PlaceInfoDto.class))
+                .collect(Collectors.toList());
+        return new PageableDto<>(
+                placeInfoDtoList,
+                placePage.getTotalElements(),
+                placePage.getPageable().getPageNumber(),
+                placePage.getTotalPages());
+    }
+
+    public PlaceSpecification getSpecification(FilterPlaceDto filterDto) {
+        List<SearchCriteria> searchCriteria = buildSearchCriteria(filterDto);
+        return new PlaceSpecification(searchCriteria);
+    }
+
+    public List<SearchCriteria> buildSearchCriteria(FilterPlaceDto filterDto) {
+        List<SearchCriteria> criteriaList = new ArrayList<>();
+        if (filterDto.getFilterDiscountDto()!= null) {
+            if(filterDto.getFilterDiscountDto().getSpecification() != null
+                    && filterDto.getFilterDiscountDto().getSpecification().getName() != null
+            ){
+                setValueIfNotEmpty(criteriaList, Place_.DISCOUNT_VALUES, Specification_.NAME,
+                        filterDto.getFilterDiscountDto().getSpecification().getName());
+            }
+            criteriaList.add(SearchCriteria.builder()
+                    .key(Place_.DISCOUNT_VALUES)
+                    .type("discountRange")
+                    .value(new String[] {String.valueOf(filterDto.getFilterDiscountDto().getDiscountMin()),
+                            String.valueOf(filterDto.getFilterDiscountDto().getDiscountMax())})
+                    .build()
+            );
+        }
+        return criteriaList;
+    }
+
+    private void setValueIfNotEmpty(List<SearchCriteria> searchCriteria, String key, String type, String value) {
+        if (!StringUtils.isEmpty(value)) {
+            searchCriteria.add(SearchCriteria.builder()
+                    .key(key)
+                    .type(type)
+                    .value(value)
+                    .build());
+        }
     }
 }
