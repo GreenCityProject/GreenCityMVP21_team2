@@ -12,6 +12,9 @@ import greencity.exception.exceptions.NotFoundException;
 import greencity.filters.*;
 import greencity.repository.CategoryRepo;
 import greencity.repository.PlaceRepo;
+import greencity.dto.place.PlaceInfoDto;
+import greencity.dto.place.PlaceUpdateDto;
+import greencity.repository.PlaceRepo;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -104,6 +107,10 @@ public class PlaceServiceImpl implements PlaceService {
         return modelMapper.map(placeRepo.save(place), PlaceResponse.class);
     }
 
+    @Override
+    public PlaceInfoDto getInfo(Long id){
+        return modelMapper.map(placeRepo.findById(id), PlaceInfoDto.class);
+    }
 
     @Override
     public PageableDto<AdminPlaceDto> filterPlaces(FilterPlaceDto filterPlaceDto, Pageable pageable) {
@@ -155,7 +162,7 @@ public class PlaceServiceImpl implements PlaceService {
         return calculateDistance(place.getLocation(), filterDistance) < filterDistance.getDistance();
     }
 
-    public double calculateDistance(PlaceLocations location, FilterDistanceDto filterDistance) {
+    private double calculateDistance(PlaceLocations location, FilterDistanceDto filterDistance) {
         var placeLatRad = toRadians(location.getLat());
         var placeLngRad = toRadians(location.getLng());
         var userLatRad = toRadians(filterDistance.getLat());
@@ -165,6 +172,10 @@ public class PlaceServiceImpl implements PlaceService {
         var deltaLng = userLngRad - placeLngRad;
 
         var a = pow(sin(deltaLat / 2), 2) + cos(placeLatRad) * cos(userLatRad) * pow(sin(deltaLng / 2), 2);
-        return EARTH_RADIUS * 2 * atan2(sqrt(a), sqrt(1 - a));
+        return EARTH_RADIUS * 2 * atan2(sqrt(a), sqrt(1 - a)); 
+    }
+
+    public PlaceUpdateDto getPlaceById(Long id) {
+        return modelMapper.map(placeRepo.findById(id), PlaceUpdateDto.class);
     }
 }

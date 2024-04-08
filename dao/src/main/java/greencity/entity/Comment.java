@@ -41,4 +41,10 @@ public class Comment {
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime modifiedDate;
+
+    @ManyToOne
+    private Place place;
+
+    @Column
+    private Byte estimate;
 }

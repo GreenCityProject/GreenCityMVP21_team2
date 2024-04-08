@@ -158,7 +158,7 @@
     </changeSet>
 
     <!-- Column for discounts value specifications -->
-    <changeSet id="create-column-discount_value_to_specifications" author="Yurii Zhurakovskyi">
+    <changeSet id="create-column-discount_value_to_specifications" author="Maryna Chekhovska">
         <addColumn tableName="specifications">
             <column name="discount_value_id" type="BIGINT">
                 <constraints foreignKeyName="FK_discount_value_id" references="discount_values (id)"/>
@@ -194,5 +194,13 @@
         <rollback>
             <dropTable tableName="place_rating_user_votes"/>
         </rollback>
+    </changeSet>
+
+    <!-- Drop table for discounts specifications if it exists -->
+    <changeSet id="drop-table-discount_specifications" author="Maryna Chekhovska">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="discounts_specifications"/>
+        </preConditions>
+        <dropTable tableName="discounts_specifications"/>
     </changeSet>
 </databaseChangeLog>
