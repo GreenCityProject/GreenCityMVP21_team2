@@ -131,7 +131,6 @@ public class PlaceServiceImpl implements PlaceService {
 
     public List<SearchCriteria> buildSearchCriteria(FilterPlaceDto filterDto) {
         List<SearchCriteria> criteriaList = new ArrayList<>();
-        System.out.println(filterDto.getFilterDiscountDto());
         if (filterDto.getFilterDiscountDto()!= null) {
             if(filterDto.getFilterDiscountDto().getSpecification() != null
                     && filterDto.getFilterDiscountDto().getSpecification().getName() != null

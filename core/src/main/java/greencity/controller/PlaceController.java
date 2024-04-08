@@ -100,7 +100,6 @@ public class PlaceController {
     public ResponseEntity<PageableDto<PlaceInfoDto>> filterPlaceBySearchPredicate(
             @Parameter(hidden = true) Pageable page,
             @RequestBody FilterPlaceDto filterDto){
-        System.out.println(filterDto);
         return ResponseEntity.status(HttpStatus.OK).body(placeService.filterPlaceBySearchPredicate(page, filterDto));
     }
 }
