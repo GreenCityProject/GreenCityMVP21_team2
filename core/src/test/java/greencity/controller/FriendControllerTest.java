@@ -27,10 +27,10 @@ public class FriendControllerTest {
     @InjectMocks
     private FriendController friendController;
 
-    @BeforeEach
-    public void setUp() {
-        friendController = new FriendController(friendService);
-    }
+//    @BeforeEach
+//    public void setUp() {
+//        friendController = new FriendController(friendService);
+//    }
 
     @Test
     @DisplayName("Test accepting friend request")
@@ -45,7 +45,6 @@ public class FriendControllerTest {
         assertEquals(expectedResponse, actualResponse);
         verify(friendService, times(1)).acceptFriendRequest(friendId);
     }
-
 
     @Test
     @DisplayName("Test adding a new friend")
@@ -140,7 +139,6 @@ public class FriendControllerTest {
         when(friendService.getAllFriendRequests(pageable)).thenReturn(expectedResponse);
 
         ResponseEntity<PageableDto> actualResponse = friendController.getAllFriendRequests(pageable);
-
 
         assertEquals(expectedResponse, actualResponse.getBody());
         assertEquals(200, actualResponse.getStatusCodeValue());

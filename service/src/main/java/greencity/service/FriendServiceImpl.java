@@ -1,5 +1,6 @@
 package greencity.service;
 
+import com.github.dockerjava.api.exception.UnauthorizedException;
 import greencity.dto.PageableDto;
 import greencity.dto.friends.UserFriendDto;
 import greencity.dto.user.UserManagementDto;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,14 +53,14 @@ public class FriendServiceImpl implements FriendService {
             throw new BadRequestException("User " + friendId + " is already your friend");
         }
         friendRepository.save(new User(currentUser.getId(), friendId, FriendStatus.ACCEPTED));
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(new UserFriendDto(friend.getId(), friend.getName(), friend.getEmail()));
     }
 
     @Override
     public ResponseEntity<Object> declineFriendRequest(long friendId) {
         User friend = userRepository.findById(friendId)
                 .orElseThrow(() -> new NotFoundException("Friend with id " + friendId + " not found"));
-        User currentUser = getCurrentUser();
+        User currentUser = (User) getCurrentUser();
         if (!friendRepository.existsByUserIdAndFriendIdAndStatus(currentUser.getId(), friendId, FriendStatus.PENDING)) {
             throw new BadRequestException("Friend request from user " + friendId + " not found");
         }
@@ -68,7 +70,7 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     public ResponseEntity<Object> deleteUserFriend(long friendId) {
-        User currentUser = getCurrentUser();
+        User currentUser = (User) getCurrentUser();
         User friend = userRepository.findById(friendId)
                 .orElseThrow(() -> new NotFoundException("Friend with id " + friendId + " not found"));
         if (!friendRepository.existsByUserIdAndFriendsFriendId(currentUser.getId(), friendId)) {
@@ -80,7 +82,7 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     public PageableDto<User> findAllFriends(Pageable pageable) {
-        User currentUser = getCurrentUser();
+        User currentUser = (User) getCurrentUser();
         Page<User> friendsPage = friendRepository.findAllFriendsByUserId(currentUser.getId(), pageable);
         List<User> friends = friendsPage.getContent();
         return new PageableDto<>(friends, friendsPage.getTotalElements(), friendsPage.getPageable().getPageNumber(), friendsPage.getTotalPages());
@@ -88,7 +90,7 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     public PageableDto<UserFriendDto> findAllNotFriends(Pageable pageable) {
-        User currentUser = getCurrentUser();
+        User currentUser = (User) getCurrentUser();
         Page<UserFriendDto> notFriendsPage = friendRepository.findAllNotFriendsByUserId(currentUser.getId(), pageable);
         List<UserFriendDto> notFriends = notFriendsPage.getContent();
         return new PageableDto<>(notFriends, notFriendsPage.getTotalElements(), notFriendsPage.getPageable().getPageNumber(), notFriendsPage.getTotalPages());
@@ -104,18 +106,25 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     public PageableDto<UserFriendDto> getAllFriendRequests(Pageable pageable) {
-        User currentUser = getCurrentUser();
+        User currentUser = (User) getCurrentUser();
         Page<UserFriendDto> friendRequestsPage = friendRepository.findAllFriendRequestsByFriendIdAndStatus(currentUser.getId(), FriendStatus.PENDING, pageable);
         List<UserFriendDto> friendRequests = friendRequestsPage.getContent();
         return new PageableDto<>(friendRequests, friendRequestsPage.getTotalElements(), friendRequestsPage.getPageable().getPageNumber(), friendRequestsPage.getTotalPages());
     }
 
-    private User getCurrentUser() {
+    public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof User) {
-            return (User) authentication.getPrincipal();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new UnauthorizedException("User is not authenticated");
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetails) {
+            String userEmail = ((UserDetails) principal).getUsername();
+            return userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new NotFoundException("Current user not found"));
         } else {
-            throw new NotFoundException("Unable to retrieve current user");
+            throw new UnauthorizedException("User details not found in authentication");
         }
     }
 }
