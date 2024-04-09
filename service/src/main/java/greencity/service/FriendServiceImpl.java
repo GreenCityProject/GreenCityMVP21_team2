@@ -45,7 +45,7 @@ public class FriendServiceImpl implements FriendService {
         if (friendId == currentUser.getId()) {
             throw new BadRequestException("Cannot add yourself as a friend");
         }
-        if (friendRepository.existsByUserIdAndFriendId(currentUser.getId(), friendId)) {
+        if (friendRepository.existsByUserIdAndFriendsFriendId(currentUser.getId(), friendId)) {
             throw new BadRequestException("User " + friendId + " is already your friend");
         }
         friendRepository.save(new User(currentUser.getId(), friendId, FriendStatus.ACCEPTED));
@@ -64,20 +64,21 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     public void deleteUserFriend(long friendId) {
+        User currentUser = getCurrentUser();
         User friend = userRepository.findById(friendId)
                 .orElseThrow(() -> new NotFoundException("Friend with id " + friendId + " not found"));
-        User currentUser = getCurrentUser();
-        if (!friendRepository.existsByUserIdAndFriendId(currentUser.getId(), friendId)) {
+        if (!friendRepository.existsByUserIdAndFriendsFriendId(currentUser.getId(), friendId)) {
             throw new BadRequestException("User " + friendId + " is not your friend");
         }
         friendRepository.deleteByUserIdAndFriendId(currentUser.getId(), friendId);
     }
 
+
     @Override
     public PageableDto findAllFriends(Pageable pageable) {
         User currentUser = getCurrentUser();
-        Page<UserFriendDto> friendsPage = friendRepository.findAllFriendsByUserId(currentUser.getId());
-        List<UserFriendDto> friends = friendsPage.getContent();
+        Page<User> friendsPage = friendRepository.findAllFriendsByUserId(currentUser.getId(), pageable);
+        List<User> friends = friendsPage.getContent();
         return new PageableDto(friends, friendsPage.getTotalElements(),
                 friendsPage.getPageable().getPageNumber(), friendsPage.getTotalPages());
     }
@@ -91,11 +92,13 @@ public class FriendServiceImpl implements FriendService {
                 notFriendsPage.getPageable().getPageNumber(), notFriendsPage.getTotalPages());
     }
 
+
+
     @Override
     public UserManagementDto[] findUserFriends(long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
-        List<UserFriendDto> friends = (List<UserFriendDto>) friendRepository.findAllFriendsByUserId(userId);
+        Page<User> friends = (Page<User>) userRepository.getAllUserFriends(userId);
         return friends.stream()
                 .map(friend -> new UserManagementDto(friend.getId(), friend.getName(), friend.getEmail()))
                 .toArray(UserManagementDto[]::new);
