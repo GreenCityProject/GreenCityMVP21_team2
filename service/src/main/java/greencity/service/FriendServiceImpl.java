@@ -15,7 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import greencity.exception.exceptions.CustomNotFoundException;
+
 
 import java.util.List;
 
@@ -107,7 +107,7 @@ public class FriendServiceImpl implements FriendService {
         if (authentication != null && authentication.getPrincipal() instanceof User) {
             return (User) authentication.getPrincipal();
         } else {
-            throw new CustomNotFoundException("Unable to retrieve current user");
+            throw new NotFoundException("Unable to retrieve current user");
         }
     }
 }
