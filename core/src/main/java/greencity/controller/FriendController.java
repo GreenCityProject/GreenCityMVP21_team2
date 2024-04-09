@@ -1,39 +1,53 @@
 package greencity.controller;
 
+import greencity.annotations.CurrentUser;
+import greencity.constant.HttpStatuses;
 import greencity.dto.PageableDto;
-import greencity.dto.friends.UserFriendDto;
 import greencity.dto.user.UserManagementDto;
+import greencity.dto.user.UserVO;
 import greencity.service.FriendService;
-import greencity.service.UserService;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 @Validated
 @AllArgsConstructor
 @RestController
 @RequestMapping("/friends")
 public class FriendController {
+
     private final FriendService friendService;
 
-    @Autowired
-    public FriendController(FriendService friendService, UserService userService) {
-        this.friendService = friendService;
-    }
-
+    @Operation(summary = "Accept friend request")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),
+    })
     @PatchMapping("/{friendId}/acceptFriend")
-    public ResponseEntity<Object> acceptFriendRequest(@PathVariable long friendId) {
-        friendService.acceptFriendRequest(friendId);
+    public ResponseEntity<Object> acceptFriendRequest(@PathVariable long friendId,
+                                                      @Parameter(hidden = true) @CurrentUser UserVO userVO) {
+        friendService.acceptFriendRequest(userVO.getId(), friendId);
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Add new friend")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),
+    })
     @PostMapping("/{friendId}")
-    public ResponseEntity<Object> addNewFriend(@PathVariable long friendId) {
-        friendService.addNewFriend(friendId);
+    public ResponseEntity<Object> addNewFriend(@PathVariable long friendId, @Parameter(hidden = true) @CurrentUser UserVO userVO) {
+        friendService.addNewFriend(userVO.getId(), friendId);
         return ResponseEntity.ok().build();
     }
 
@@ -48,10 +62,10 @@ public class FriendController {
         friendService.deleteUserFriend(friendId);
         return ResponseEntity.ok().build();
     }
-    @ApiOperation("Get all friends")
+
     @GetMapping
-    public ResponseEntity<PageableDto> findAllFriends(Pageable pageable) {
-        PageableDto friends = friendService.findAllFriends(pageable);
+    public ResponseEntity<PageableDto> findAllFriends(@Parameter(hidden = true) @CurrentUser UserVO userVO) {
+        PageableDto friends = friendService.findAllFriends(userVO.getId());
         return ResponseEntity.ok(friends);
     }
 

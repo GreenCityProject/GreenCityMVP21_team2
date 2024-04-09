@@ -86,9 +86,4 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(new UserArgumentResolver(userService, modelMapper));
     }
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/swagger-ui/**")
-                .allowedOrigins("http://localhost:8060");
-    }
 }

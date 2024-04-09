@@ -12,13 +12,11 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
 @Transactional
 public interface FriendRepo extends JpaRepository<User, Long> {
-
-    @Query(nativeQuery = true, value = "SELECT * FROM users WHERE id IN ( " + "(SELECT user_id FROM users_friends WHERE friend_id = :userId and status = 'FRIEND')" + "UNION (SELECT friend_id FROM users_friends WHERE user_id = :userId and status = 'FRIEND'));")
-    Page<User> findAllFriendsByUserId(@Param("userId") Long userId, Pageable pageable);
-
     @Query(value = "SELECT new greencity.dto.friends.UserFriendDto(u.id, u.name, u.email) " + "FROM User u " + "WHERE u.id NOT IN " + "(SELECT f.user.id FROM Friends f WHERE f.friend.id = :userId AND f.status = 'FRIEND')", countQuery = "SELECT count(u) " + "FROM User u " + "WHERE u.id NOT IN " + "(SELECT f.user.id FROM Friends f WHERE f.friend.id = :userId AND f.status = 'FRIEND')")
     Page<UserFriendDto> findAllNotFriendsByUserId(@Param("userId") Long userId, Pageable pageable);
 
@@ -42,4 +40,16 @@ public interface FriendRepo extends JpaRepository<User, Long> {
     @Modifying
     @Query("DELETE FROM Friends f WHERE f.user.id = :userId AND f.friend.id = :friendId")
     void deleteByUserIdAndFriendId(@Param("userId") Long userId, @Param("friendId") Long friendId);
+
+    @Modifying
+    @Query(nativeQuery = true,
+            value = "INSERT INTO users_friends(user_id, friend_id, status, created_date) "
+                    + "VALUES (:userId, :friendId, 'REQUEST', CURRENT_TIMESTAMP) "
+                    + "ON CONFLICT (user_id, friend_id) DO UPDATE SET status = 'REQUEST'")
+    void addNewFriend(Long userId, Long friendId);
+
+    @Query(nativeQuery = true, value = "SELECT * FROM users WHERE id IN ( "
+            + "(SELECT user_id FROM users_friends WHERE friend_id = :userId and status = 'FRIEND')"
+            + "UNION (SELECT friend_id FROM users_friends WHERE user_id = :userId and status = 'FRIEND'));")
+    List<User> getAllUserFriends(Long userId);
 }
