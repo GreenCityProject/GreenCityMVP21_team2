@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import greencity.exception.exceptions.CustomNotFoundException;
+
 import java.util.List;
 
 @Service
@@ -31,16 +32,14 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     public void acceptFriendRequest(long friendId) {
-        User friend = userRepository.findById(friendId)
-                .orElseThrow(() -> new NotFoundException("Friend with id " + friendId + " not found"));
+        User friend = userRepository.findById(friendId).orElseThrow(() -> new NotFoundException("Friend with id " + friendId + " not found"));
         User currentUser = getCurrentUser();
         friendRepository.updateFriendStatus(currentUser.getId(), friendId, FriendStatus.ACCEPTED);
     }
 
     @Override
     public void addNewFriend(long friendId) {
-        User friend = userRepository.findById(friendId)
-                .orElseThrow(() -> new NotFoundException("Friend with id " + friendId + " not found"));
+        User friend = userRepository.findById(friendId).orElseThrow(() -> new NotFoundException("Friend with id " + friendId + " not found"));
         User currentUser = getCurrentUser();
         if (friendId == currentUser.getId()) {
             throw new BadRequestException("Cannot add yourself as a friend");
@@ -53,8 +52,7 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     public void declineFriendRequest(long friendId) {
-        User friend = userRepository.findById(friendId)
-                .orElseThrow(() -> new NotFoundException("Friend with id " + friendId + " not found"));
+        User friend = userRepository.findById(friendId).orElseThrow(() -> new NotFoundException("Friend with id " + friendId + " not found"));
         User currentUser = getCurrentUser();
         if (!friendRepository.existsByUserIdAndFriendIdAndStatus(currentUser.getId(), friendId, FriendStatus.PENDING)) {
             throw new BadRequestException("Friend request from user " + friendId + " not found");
@@ -65,8 +63,7 @@ public class FriendServiceImpl implements FriendService {
     @Override
     public void deleteUserFriend(long friendId) {
         User currentUser = getCurrentUser();
-        User friend = userRepository.findById(friendId)
-                .orElseThrow(() -> new NotFoundException("Friend with id " + friendId + " not found"));
+        User friend = userRepository.findById(friendId).orElseThrow(() -> new NotFoundException("Friend with id " + friendId + " not found"));
         if (!friendRepository.existsByUserIdAndFriendsFriendId(currentUser.getId(), friendId)) {
             throw new BadRequestException("User " + friendId + " is not your friend");
         }
@@ -79,8 +76,7 @@ public class FriendServiceImpl implements FriendService {
         User currentUser = getCurrentUser();
         Page<User> friendsPage = friendRepository.findAllFriendsByUserId(currentUser.getId(), pageable);
         List<User> friends = friendsPage.getContent();
-        return new PageableDto(friends, friendsPage.getTotalElements(),
-                friendsPage.getPageable().getPageNumber(), friendsPage.getTotalPages());
+        return new PageableDto(friends, friendsPage.getTotalElements(), friendsPage.getPageable().getPageNumber(), friendsPage.getTotalPages());
     }
 
     @Override
@@ -88,30 +84,22 @@ public class FriendServiceImpl implements FriendService {
         User currentUser = getCurrentUser();
         Page<UserFriendDto> notFriendsPage = friendRepository.findAllNotFriendsByUserId(currentUser.getId(), pageable);
         List<UserFriendDto> notFriends = notFriendsPage.getContent();
-        return new PageableDto(notFriends, notFriendsPage.getTotalElements(),
-                notFriendsPage.getPageable().getPageNumber(), notFriendsPage.getTotalPages());
+        return new PageableDto(notFriends, notFriendsPage.getTotalElements(), notFriendsPage.getPageable().getPageNumber(), notFriendsPage.getTotalPages());
     }
-
-
 
     @Override
     public UserManagementDto[] findUserFriends(long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
         Page<User> friends = (Page<User>) userRepository.getAllUserFriends(userId);
-        return friends.stream()
-                .map(friend -> new UserManagementDto(friend.getId(), friend.getName(), friend.getEmail()))
-                .toArray(UserManagementDto[]::new);
+        return friends.stream().map(friend -> new UserManagementDto(friend.getId(), friend.getName(), friend.getEmail())).toArray(UserManagementDto[]::new);
     }
 
     @Override
     public PageableDto getAllFriendRequests(Pageable pageable) {
         User currentUser = getCurrentUser();
-        Page<UserFriendDto> friendRequestsPage = friendRepository
-                .findAllFriendRequestsByFriendIdAndStatus(currentUser.getId(), FriendStatus.PENDING, pageable);
+        Page<UserFriendDto> friendRequestsPage = friendRepository.findAllFriendRequestsByFriendIdAndStatus(currentUser.getId(), FriendStatus.PENDING, pageable);
         List<UserFriendDto> friendRequests = friendRequestsPage.getContent();
-        return new PageableDto(friendRequests, friendRequestsPage.getTotalElements(),
-                friendRequestsPage.getPageable().getPageNumber(), friendRequestsPage.getTotalPages());
+        return new PageableDto(friendRequests, friendRequestsPage.getTotalElements(), friendRequestsPage.getPageable().getPageNumber(), friendRequestsPage.getTotalPages());
     }
 
     private User getCurrentUser() {
