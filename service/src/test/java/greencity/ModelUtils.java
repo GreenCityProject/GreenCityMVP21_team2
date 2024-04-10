@@ -1,5 +1,6 @@
 package greencity;
 
+import greencity.annotations.RatingCalculationEnum;
 import greencity.constant.AppConstant;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.econews.*;
@@ -11,6 +12,7 @@ import greencity.dto.language.LanguageTranslationDTO;
 import greencity.dto.language.LanguageVO;
 import greencity.dto.notification.NotificationDto;
 import greencity.dto.ownsecurity.OwnSecurityVO;
+import greencity.dto.ratingstatistics.RatingStatisticsViewDto;
 import greencity.dto.search.SearchNewsDto;
 import greencity.dto.shoppinglistitem.CustomShoppingListItemResponseDto;
 import greencity.dto.shoppinglistitem.CustomShoppingListItemVO;
@@ -683,6 +685,19 @@ public class ModelUtils {
             .build();
     }
 
+    public static RatingStatisticsViewDto getRatingStatisticsViewDto() {
+        return RatingStatisticsViewDto.builder()
+                .id("1")
+                .eventName(RatingCalculationEnum.ADD_COMMENT.name())
+                .userId("1")
+                .userEmail("useremail11@mail.com")
+                .startDate(LocalDate.now().minusDays(3).toString())
+                .endDate(LocalDate.now().plusDays(3).toString())
+                .pointsChanged("9")
+                .currentRating("100")
+                .build();
+    }
+  
     public static Notification getNotification() {
         return Notification.builder()
                 .id(1L)
