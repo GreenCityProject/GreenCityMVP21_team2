@@ -27,4 +27,8 @@ public interface PlaceService {
      */
 
     PlaceUpdateDto getPlaceById(Long id);
+
+    void addPlaceToFavorite(UserVO user, Long placeId);
+
+    void removePlaceFromFavorite(UserVO user, Long placeId);
 }
