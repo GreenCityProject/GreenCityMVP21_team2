@@ -39,4 +39,12 @@ public class SwaggerConfig {
                                 .bearerFormat("JWT")))
                 .info(new Info().title("GreenCity API"));
     }
+    @Bean
+    public Docket api() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("greencity.controller"))
+                .paths(PathSelectors.any())
+                .build();
+    }
 }

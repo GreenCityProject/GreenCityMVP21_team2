@@ -36,7 +36,4 @@ public class UserManagementDto {
 
     @NotNull
     private UserStatus userStatus;
-
-    public UserManagementDto(Long id, String name, String email) {
-    }
 }

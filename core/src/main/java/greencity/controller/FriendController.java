@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Validated
 @AllArgsConstructor
 @RestController
@@ -58,14 +60,19 @@ public class FriendController {
     }
 
     @DeleteMapping("/{friendId}")
-    public ResponseEntity<Object> deleteUserFriend(@PathVariable long friendId) {
-        friendService.deleteUserFriend(friendId);
+    public ResponseEntity<Object> deleteUserFriend(@Parameter(hidden = true) @CurrentUser UserVO userVO, @PathVariable long friendId) {
+        friendService.deleteUserFriend(userVO.getId(),friendId);
         return ResponseEntity.ok().build();
     }
-
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),
+    })
     @GetMapping
-    public ResponseEntity<PageableDto> findAllFriends(@Parameter(hidden = true) @CurrentUser UserVO userVO) {
-        PageableDto friends = friendService.findAllFriends(userVO.getId());
+    public ResponseEntity<List<UserManagementDto>> findAllFriends(@Parameter(hidden = true) @CurrentUser UserVO userVO) {
+        List<UserManagementDto> friends = friendService.findAllFriends(userVO.getId());
         return ResponseEntity.ok(friends);
     }
 
@@ -76,9 +83,9 @@ public class FriendController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<UserManagementDto[]> findUserFriends(@PathVariable long userId) {
-        UserManagementDto[] friends = friendService.findUserFriends(userId);
-        return ResponseEntity.ok(friends);
+    public ResponseEntity<Object> findUserFriends(@PathVariable long userId) {
+        List<UserManagementDto> friends = friendService.findAllFriends(userId);
+        return ResponseEntity.ok().body(friends);
     }
 
     @GetMapping("/friendRequests")

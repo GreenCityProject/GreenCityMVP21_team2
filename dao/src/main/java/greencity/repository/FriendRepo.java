@@ -1,6 +1,7 @@
 package greencity.repository;
 
 import greencity.dto.friends.UserFriendDto;
+import greencity.dto.user.UserManagementDto;
 import greencity.entity.User;
 import greencity.enums.FriendStatus;
 import org.springframework.data.domain.Page;
@@ -24,13 +25,16 @@ public interface FriendRepo extends JpaRepository<User, Long> {
     Page<UserFriendDto> findAllFriendRequestsByFriendIdAndStatus(@Param("friendId") Long friendId, @Param("status") FriendStatus status, Pageable pageable);
 
     @Modifying
-    @Query("UPDATE Friends f SET f.status = :friendStatus WHERE f.user.id = :userId AND f.friend.id = :friendId")
+    @Query(nativeQuery = true,
+            value = "INSERT INTO users_friends(user_id, friend_id, status, created_date) "
+                    + "VALUES (:userId, :friendId, :friendStatus, CURRENT_TIMESTAMP) "
+                    + "ON CONFLICT (user_id, friend_id) DO UPDATE SET status = :friendStatus")
     void updateFriendStatus(@Param("userId") Long userId, @Param("friendId") Long friendId, @Param("friendStatus") FriendStatus friendStatus);
 
-    @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END " + "FROM Friends WHERE user_id = :userId AND friend_id = :friendId", nativeQuery = true)
+    @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END " + "FROM users_friends WHERE user_id = :userId AND friend_id = :friendId", nativeQuery = true)
     boolean existsByUserIdAndFriendsFriendId(@Param("userId") Long userId, @Param("friendId") Long friendId);
 
-    @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END " + "FROM Friends WHERE user_id = :userId AND friend_id = :friendId AND status = :friendStatus", nativeQuery = true)
+    @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END " + "FROM users_friends WHERE user_id = :userId AND friend_id = :friendId AND status = :friendStatus", nativeQuery = true)
     boolean existsByUserIdAndFriendIdAndStatus(@Param("userId") Long userId, @Param("friendId") Long friendId, @Param("friendStatus") FriendStatus friendStatus);
 
     @Modifying
@@ -48,8 +52,12 @@ public interface FriendRepo extends JpaRepository<User, Long> {
                     + "ON CONFLICT (user_id, friend_id) DO UPDATE SET status = 'REQUEST'")
     void addNewFriend(Long userId, Long friendId);
 
-    @Query(nativeQuery = true, value = "SELECT * FROM users WHERE id IN ( "
-            + "(SELECT user_id FROM users_friends WHERE friend_id = :userId and status = 'FRIEND')"
-            + "UNION (SELECT friend_id FROM users_friends WHERE user_id = :userId and status = 'FRIEND'));")
-    List<User> getAllUserFriends(Long userId);
+    @Query(nativeQuery = true, value =
+            "SELECT * FROM users " +
+                    "WHERE id IN (" +
+                    "   (SELECT user_id FROM users_friends WHERE friend_id = :userId AND status = 'FRIEND') " +
+                    "   UNION " +
+                    "   (SELECT friend_id FROM users_friends WHERE user_id = :userId AND status = 'FRIEND')" +
+                    ")")
+    List<UserManagementDto> getAllUserFriends(Long userId);
 }

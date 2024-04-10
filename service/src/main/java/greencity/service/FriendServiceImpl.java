@@ -1,6 +1,6 @@
 package greencity.service;
 
-import com.github.dockerjava.api.exception.UnauthorizedException;
+
 import greencity.dto.PageableDto;
 import greencity.dto.friends.UserFriendDto;
 import greencity.dto.user.UserManagementDto;
@@ -20,6 +20,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -34,11 +36,11 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public void addNewFriend(long userId, long friendId) {
+    public ResponseEntity<Object> addNewFriend(long userId, long friendId) {
         User friend = getUserById(friendId);
         validateAddFriendOperation(userId, friendId);
         friendRepository.addNewFriend(userId, friendId);
-        ResponseEntity.ok().body(new UserFriendDto(friendId, friend.getName(), friend.getEmail()));
+        return ResponseEntity.ok().body(new UserFriendDto(friendId, friend.getName(), friend.getEmail()));
     }
 
     @Override
@@ -51,22 +53,17 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public ResponseEntity<Object> deleteUserFriend(long friendId) {
-        User currentUser = getCurrentUser();
+    public ResponseEntity<Object> deleteUserFriend(long userId,long friendId) {
+
         User friend = getUserById(friendId);
-        validateUserFriendship(currentUser.getId(), friendId);
-        friendRepository.deleteByUserIdAndFriendId(currentUser.getId(), friendId);
+        validateUserFriendship(userId, friendId);
+        friendRepository.deleteByUserIdAndFriendId(userId, friendId);
         return ResponseEntity.ok().build();
     }
 
-
-
     @Override
-    public PageableDto findAllFriends(Long userId) {
-        User currentUser = getCurrentUser();
-        Page<User> friendsPage = (Page<User>) friendRepository.getAllUserFriends(userId);
-        return new PageableDto<>(friendsPage.getContent(), friendsPage.getTotalElements(),
-                friendsPage.getNumber(), friendsPage.getTotalPages());
+    public List<UserManagementDto> findAllFriends(Long userId) {
+        return friendRepository.getAllUserFriends(userId);
     }
 
     @Override
@@ -77,11 +74,11 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public UserManagementDto[] findUserFriends(long userId) {
-        User user = getUserById(userId);
-        Page<User> friends = (Page<User>) userRepository.getAllUserFriends(userId);
-        return friends.stream().map(friend -> new UserManagementDto(friend.getId(), friend.getName(), friend.getEmail())).toArray(UserManagementDto[]::new);
+    public  ResponseEntity<Object> findUserFriends(long userId) {
+        List<User> userFriends = userRepository.getAllUserFriends(userId);
+        return ResponseEntity.ok().body(userFriends);
     }
+
 
     @Override
     public PageableDto<UserFriendDto> getAllFriendRequests(Pageable pageable) {
@@ -92,9 +89,7 @@ public class FriendServiceImpl implements FriendService {
 
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new UnauthorizedException("User is not authenticated");
-        }
+
 
         Object principal = authentication.getPrincipal();
 
