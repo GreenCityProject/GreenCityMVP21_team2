@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="Chekhovska-4" author="Maryna Chekhovska">
+        <createTable tableName="events">
+            <column name="id" autoIncrement="true" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="creation_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="title" type="VARCHAR(70)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title_image" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(63206)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="open" type="BOOLEAN"/>
+            <column name="rating" type="DOUBLE"/>
+            <column name="organizer_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_events_users" references="users (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="events"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="createTableEventDateLocations2" author="Maryna Chekhovska">
+        <createTable tableName="event_date_locations">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="start_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="finish_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="latitude"  type="DOUBLE"/>
+            <column name="longitude"  type="DOUBLE"/>
+            <column name="online_link" type="VARCHAR"/>
+            <column name="event_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_event_date_locations"
+                             references="events (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="event_date_locations"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="changeSetEventAttenders1" author="Maryna Chekhovska">
+        <createTable tableName="events_attenders">
+            <column name="event_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_event_attender_id" references="events (id)"/>
+            </column>
+            <column name="user_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_user_events" references="users (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="events_attenders"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="changeSetEventFollowers" author="Maryna Chekhovska">
+        <createTable tableName="events_followers">
+            <column name="event_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_event_follower_id" references="events (id)"/>
+            </column>
+            <column name="user_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_user_events_followers" references="users (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="events_followers"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="changeSetEventRatingUserVotes" author="Maryna Chekhovska">
+        <createTable tableName="events_rating_user_votes">
+            <column name="event_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_event_rating_id" references="events (id)"/>
+            </column>
+            <column name="user_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_user_events_rating" references="users (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="events_rating_user_votes"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="changeSetEventTags1" author="Maryna Chekhovska">
+        <createTable tableName="events_tags">
+            <column name="event_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_event_tags_id" references="events (id)"/>
+            </column>
+            <column name="tag_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_tag_events" references="tags (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="events_tags"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="changeSetEventImagesChekhovska1" author="Maryna Chekhovska">
+        <createTable tableName="events_images">
+            <column name="id" autoIncrement="true" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name ="link" type="VARCHAR"/>
+            <column name="event_id"  type="BIGINT">
+                <constraints foreignKeyName="FK_image_event_id" references="events (id)"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="events_images"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
