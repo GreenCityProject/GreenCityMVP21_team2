@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/place")
 @RequiredArgsConstructor
@@ -85,5 +87,20 @@ public class PlaceController {
     @GetMapping("/about/{id}")
     public ResponseEntity<PlaceUpdateDto> getPlaceById(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.OK).body(placeService.getPlaceById(id));
+    }
+
+    /**
+     * Method to getting {@link List<PlaceResponse>} user's favorite places.
+     *
+     * @author Vasyl Shtoiko
+     */
+    @Operation(summary = "Get all user's favorite places.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED)
+    })
+    @GetMapping("/favorite")
+    public ResponseEntity<List<PlaceResponse>> getAllFavoritePlaces(@Parameter(hidden = true) @CurrentUser UserVO user){
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.getFavoritePlaces(user));
     }
 }
