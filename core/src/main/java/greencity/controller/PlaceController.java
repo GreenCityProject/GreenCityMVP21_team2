@@ -71,7 +71,7 @@ public class PlaceController {
             @Valid @RequestBody FilterPlaceDto filterDto, @Parameter(hidden = true) Pageable pageable) {
         return placeService.filterPlaces(filterDto, pageable);
     }
-}
+
     /**
      * Method to getting {@link PlaceInfoDto} specified by id.
      *
