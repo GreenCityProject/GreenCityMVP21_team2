@@ -1,10 +1,7 @@
 package greencity.service;
 
-
 import greencity.dto.PageableDto;
 import greencity.dto.friends.UserFriendDto;
-import greencity.dto.user.UserForListDto;
-import greencity.dto.user.UserManagementDto;
 import greencity.entity.Friends;
 import greencity.entity.User;
 import greencity.enums.FriendStatus;
@@ -12,7 +9,6 @@ import greencity.exception.exceptions.BadRequestException;
 import greencity.exception.exceptions.NotFoundException;
 import greencity.repository.FriendRepo;
 import greencity.repository.UserRepo;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +16,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.modelmapper.ModelMapper;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,8 +59,7 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public ResponseEntity<Object> deleteUserFriend(long userId,long friendId) {
-
+    public ResponseEntity<Object> deleteUserFriend(long userId, long friendId) {
         User friend = getUserById(friendId);
         validateUserFriendship(userId, friendId);
         friendRepository.deleteByUserIdAndFriendId(userId, friendId);
@@ -71,11 +67,9 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public List<UserForListDto> findAllFriends(Long userId, Pageable pageable) {
+    public List<UserFriendDto> findAllFriends(Long userId, Pageable pageable) {
         Page<Friends> friendsPage = friendRepository.getAllUserFriends(userId, pageable);
-        return friendsPage.getContent().stream()
-                .map(friend -> modelMapper.map(friend.getFriend(), UserForListDto.class))
-                .collect(Collectors.toList());
+        return friendsPage.getContent().stream().map(friend -> modelMapper.map(friend.getFriend(), UserFriendDto.class)).collect(Collectors.toList());
     }
 
     @Override
@@ -86,11 +80,12 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public  ResponseEntity<Object> findUserFriends(long userId) {
+    public ResponseEntity<Object> findUserFriends(long userId) {
         List<User> userFriends = userRepository.getAllUserFriends(userId);
-        return ResponseEntity.ok().body(userFriends);
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", String.format("User friends: '%s'", userFriends));
+        return ResponseEntity.ok(response);
     }
-
 
     @Override
     public PageableDto<UserFriendDto> getAllFriendRequests(Pageable pageable) {
@@ -101,20 +96,13 @@ public class FriendServiceImpl implements FriendService {
 
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-
         Object principal = authentication.getPrincipal();
-
-
         String userEmail = ((UserDetails) principal).getUsername();
-        return userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new NotFoundException("Current user not found"));
+        return userRepository.findByEmail(userEmail).orElseThrow(() -> new NotFoundException("Current user not found"));
     }
 
-
     private User getUserById(long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
+        return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
     }
 
     private void validateAddFriendOperation(long userId, long friendId) {

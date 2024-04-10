@@ -1,4 +1,5 @@
 package greencity.controller;
+import greencity.dto.friends.UserFriendDto;
 import greencity.dto.user.UserForListDto;
 import greencity.service.UserService;
 import greencity.telegram.TelegramMessageSender;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -21,7 +23,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Validated
@@ -69,10 +75,13 @@ public class FriendController {
     @PostMapping("/{friendId}")
     public ResponseEntity<Object> addNewFriend(@PathVariable long friendId, @Parameter(hidden = true) @CurrentUser UserVO userVO) {
         friendService.addNewFriend(userVO.getId(), friendId);
-        sendTelegramMessage("Hey, " + userService.findById(userVO.getId()).getName() + ". New friend '" +  userService.findById(friendId).getName() + "' added!");
-        return ResponseEntity.ok().build();
+        String userName = userService.findById(userVO.getId()).getName();
+        String friendName = userService.findById(friendId).getName();
+        sendTelegramMessage("Hey, " + userName + ". New friend '" + friendName + "' added!");
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", String.format("Friend '%s' added successfully!", friendName));
+        return ResponseEntity.ok(response);
     }
-
     private void sendTelegramMessage(String message) {
         TelegramMessageSender sender = new TelegramMessageSender(botToken);
         sender.sendMessage(chatId, message);
@@ -87,7 +96,12 @@ public class FriendController {
     @DeleteMapping("/{friendId}")
     public ResponseEntity<Object> deleteUserFriend(@Parameter(hidden = true) @CurrentUser UserVO userVO, @PathVariable long friendId) {
         friendService.deleteUserFriend(userVO.getId(), friendId);
-        return ResponseEntity.ok().build();
+        String userName = userService.findById(userVO.getId()).getName();
+        String friendName = userService.findById(friendId).getName();
+        sendTelegramMessage("Ooops, " + userName + "! Friend '" + friendName + "' left!");
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", String.format("Friend '%s' deleted successfully!", friendName));
+        return ResponseEntity.ok(response);
     }
 
     @ApiResponses(value = {
@@ -97,11 +111,21 @@ public class FriendController {
             @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),
     })
     @GetMapping("/friends")
-    public ResponseEntity<List<UserForListDto>> findAllFriends(@CurrentUser UserVO userVO, Pageable pageable) {
-        List<UserForListDto> friends = friendService.findAllFriends(userVO.getId(), pageable);
+    public ResponseEntity<List<UserFriendDto>> findAllFriends(@CurrentUser UserVO userVO, Pageable pageable) {
+        List<UserFriendDto> friends = friendService.findAllFriends(userVO.getId(), pageable);
         log.info("User with id {} requested all friends. Found {} friends.", userVO.getId(), friends.size());
-        return ResponseEntity.ok(friends);
+        List<String> friendNames = new ArrayList<>();
+        for (UserFriendDto friend : friends) {
+            friendNames.add(friend.getName());
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Friends: " + String.join(", ", friendNames));
+        response.put("friends", friends);
+
+        return ResponseEntity.ok((List<UserFriendDto>) response);
     }
+
 
     @GetMapping("/not-friends-yet")
     public ResponseEntity<PageableDto> findAllNotFriends(Pageable pageable) {
