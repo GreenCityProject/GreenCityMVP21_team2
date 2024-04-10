@@ -48,8 +48,8 @@ class ShoppingListItemSpecificationTest {
     private List<SearchCriteria> criteriaListForIdCriteria;
     private String content = "example";
 
-    @BeforeEach
-    void setUp() {
+    @Test
+    void toPredicate_ShoppingListItemSpecificationTestForContentCriteria_shouldReturnContentPredicate() {
         criteriaList = new ArrayList<>();
         criteriaList.add(SearchCriteria.builder()
                 .key(ShoppingListItemTranslation_.CONTENT)
@@ -59,10 +59,7 @@ class ShoppingListItemSpecificationTest {
         ShoppingListItem_.id = id;
         ShoppingListItemTranslation_.shoppingListItem = singularAttribute;
         shoppingListItemSpecification = new ShoppingListItemSpecification(criteriaList);
-    }
 
-    @Test
-    void toPredicate_ShoppingListItemSpecificationTest_shouldReturnContentPredicate() {
         //checking for CONTENT criteria
         when(criteriaBuilderMock.conjunction()).thenReturn(allPredicateMock);
         when(criteriaBuilderMock.and(eq(allPredicateMock), eq(andContentPredicate))).thenReturn(andContentPredicate);
@@ -87,7 +84,7 @@ class ShoppingListItemSpecificationTest {
     }
 
     @Test
-    void toPredicate_ShoppingListItemSpecificationTest_shouldReturnIdPredicate() {
+    void toPredicate_ShoppingListItemSpecificationTestForIdCriteria_shouldReturnIdPredicate() {
         //checking for ID criteria
         criteriaListForIdCriteria = new ArrayList<>();
         criteriaListForIdCriteria.add(SearchCriteria.builder()
@@ -110,17 +107,29 @@ class ShoppingListItemSpecificationTest {
     }
 
     @Test
-    void getTranslationPredicate_ShoppingListItemSpecificationTest_shouldReturnAllPredicates() {
+    void toPredicate_ShoppingListItemSpecificationTestForContentCriteriaWithEmptyValue_shouldReturnAllContentPredicates() {
+        List<SearchCriteria> criteriaListForContentCriteria = new ArrayList<>();
+        criteriaListForContentCriteria.add(SearchCriteria.builder()
+                .key(ShoppingListItemTranslation_.CONTENT)
+                .type(ShoppingListItemTranslation_.CONTENT)
+                .value("")
+                .build());
+        ShoppingListItem_.id = id;
+        ShoppingListItemTranslation_.shoppingListItem = singularAttribute;
+        ShoppingListItemSpecification shoppingListItemSpecificationForContentCriteria = new ShoppingListItemSpecification(criteriaListForContentCriteria);
+
+        //checking for CONTENT criteria
+        when(criteriaBuilderMock.conjunction()).thenReturn(allPredicateMock);
+        when(criteriaBuilderMock.and(any(), any())).thenReturn(andContentPredicate);
+
         //checking when in getTranslationPredicate searchCriteria.getValue().toString().trim().equals("") is true
         when(criteriaQueryMock.from(ShoppingListItemTranslation.class)).thenReturn(shoppingListItemTranslationRootMock);
-        when(searchCriteriaForAll.getValue()).thenReturn("");
-        when(criteriaBuilderMock.conjunction()).thenReturn(allPredicateMock);
+        when(criteriaBuilderMock.conjunction()).thenReturn(andContentPredicate);
 
-        Predicate actual = shoppingListItemSpecification.getTranslationPredicate(shoppingListItemRootMock, criteriaQueryMock, criteriaBuilderMock, searchCriteriaForAll);
+        Predicate actual = shoppingListItemSpecificationForContentCriteria.toPredicate(shoppingListItemRootMock, criteriaQueryMock, criteriaBuilderMock);
 
-        verify(criteriaBuilderMock).conjunction();
-        verify(criteriaBuilderMock, never()).and(any(), any());
+        verify(criteriaBuilderMock, never()).like(any(), (Expression<String>) any());
 
-        assertEquals(allPredicateMock,actual);
+        assertEquals(andContentPredicate,actual);
     }
 }
