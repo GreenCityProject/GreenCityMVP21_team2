@@ -12,12 +12,13 @@ import greencity.repository.CategoryRepo;
 import greencity.repository.PlaceRepo;
 import greencity.dto.place.PlaceInfoDto;
 import greencity.dto.place.PlaceUpdateDto;
-import greencity.repository.PlaceRepo;
+import greencity.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static greencity.constant.AppConstant.*;
@@ -30,7 +31,7 @@ public class PlaceServiceImpl implements PlaceService {
     private final CategoryRepo categoryRepo;
     private final GeocodingService geocodingService;
     private final ModelMapper modelMapper;
-
+    private final UserRepo userRepo;
     private final String defaultImage = "default";
 
     @Override
@@ -103,5 +104,20 @@ public class PlaceServiceImpl implements PlaceService {
     @Override
     public PlaceUpdateDto getPlaceById(Long id){
         return modelMapper.map(placeRepo.findById(id), PlaceUpdateDto.class);
+    }
+
+    @Override
+    public void addPlaceToFavorite(UserVO user, Long placeId){
+        var place = placeRepo.findById(placeId).orElseThrow(() -> new NotFoundException(STR."Place with id=\{placeId} not found"));
+        place.getFavorites().add(modelMapper.map(user,User.class));
+        placeRepo.save(place);
+    }
+
+    @Override
+    public void removePlaceFromFavorite(UserVO userVO, Long placeId){
+        var place = placeRepo.findById(placeId).orElseThrow(() -> new NotFoundException(STR."Place with id=\{placeId} not found"));
+        User user = userRepo.findById(userVO.getId()).orElseThrow(() -> new NotFoundException(ErrorMessage.USER_NOT_FOUND_BY_ID + userVO.getId()));
+        place.getFavorites().remove(user);
+        placeRepo.save(place);
     }
 }
