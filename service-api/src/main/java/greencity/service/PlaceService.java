@@ -3,6 +3,7 @@ package greencity.service;
 import greencity.dto.PageableDto;
 import greencity.dto.place.*;
 import greencity.dto.user.UserVO;
+import greencity.enums.EmailNotification;
 import org.springframework.data.domain.Pageable;
 
 /**
@@ -32,4 +33,31 @@ public interface PlaceService {
      * @return {@link PageableDto} of {@link PlaceInfoDto} instance.
      */
     PageableDto<PlaceInfoDto> filterPlaceBySearchPredicate(Pageable pageable, FilterPlaceDto filterDto);
+
+    /**
+     * Method subscribe for email notification about place updates
+     *
+     * @param placeSubscribeDto of the {@link PlaceSubscribeDto} contain sending frequency.
+     * @param userVO of the {@link UserVO}
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    PlaceSubscribeResponseDto subscribeEmailNotification(PlaceSubscribeDto placeSubscribeDto, UserVO userVO);
+
+    /**
+     * Method unsubscribe for email notification about place updates
+     *
+     * @param userVO of the {@link UserVO}
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    PlaceSubscribeResponseDto unsubscribeEmailNotification(UserVO userVO);
+
+    /**
+     * Method update email notification sending frequency
+     *
+     * @param userVO of the {@link UserVO}
+     * @param emailNotification of the {@link EmailNotification}
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    PlaceSubscribeResponseDto updateEmailNotificationFrequency(UserVO userVO, EmailNotification emailNotification);
+
 }

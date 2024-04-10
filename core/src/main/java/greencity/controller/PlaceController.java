@@ -7,6 +7,7 @@ import greencity.constant.SwaggerExampleModel;
 import greencity.dto.PageableDto;
 import greencity.dto.place.*;
 import greencity.dto.user.UserVO;
+import greencity.enums.EmailNotification;
 import greencity.service.PlaceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,6 +19,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.function.EntityResponse;
 
 @RestController
 @RequestMapping("/place")
@@ -102,4 +104,69 @@ public class PlaceController {
             @RequestBody FilterPlaceDto filterDto){
         return ResponseEntity.status(HttpStatus.OK).body(placeService.filterPlaceBySearchPredicate(page, filterDto));
     }
+
+    /**
+     * Method for subscribing email notification about place updates.
+     *
+     * @param placeSubscribeDto of the {@link PlaceSubscribeResponseDto} with EmailNotification.
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+    })
+    @PostMapping("/emailNotification/subscribe")
+    public ResponseEntity<PlaceSubscribeResponseDto> subscribePlaceEmailNotification(
+            @RequestBody PlaceSubscribeDto placeSubscribeDto,
+            @Parameter(hidden = true) @CurrentUser UserVO userVO){
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.subscribeEmailNotification(placeSubscribeDto, userVO));
+    }
+
+    /**
+     * Method for unsubscribing email notification about place updates.
+     *
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN)
+    })
+    @PostMapping("/emailNotification/unsubscribe")
+    public ResponseEntity<PlaceSubscribeResponseDto> unsubscribePlaceEmailNotification(@Parameter(hidden = true) @CurrentUser UserVO userVO){
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.unsubscribeEmailNotification(userVO));
+    }
+
+    /**
+     * Method update email notification sending frequency.
+     *
+     * @param placeSubscribeDto of the {@link PlaceSubscribeResponseDto} with EmailNotification.
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+    })
+    @PutMapping("/emailNotification/updateFrequency")
+    public ResponseEntity<PlaceSubscribeResponseDto> updateEmailNotificationFrequency(
+            @RequestBody PlaceSubscribeDto placeSubscribeDto,
+            @Parameter(hidden = true) @CurrentUser UserVO userVO
+    ){
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.updateEmailNotificationFrequency(userVO, placeSubscribeDto.getEmailNotification()));
+    }
+
+    @GetMapping("/emailNotification/getAll")
+    public EntityResponse getAllPlaceUpdateSubscribers(){
+        return null;
+    }
+
+    @GetMapping("/emailNotification/getAll/{frequency}")
+    public EntityResponse getAllPlaceUpdateSubscribersByFrequency(
+            @PathVariable EmailNotification frequency){
+        return null;
+    }
+
 }
