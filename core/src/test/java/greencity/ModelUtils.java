@@ -16,6 +16,7 @@ import greencity.dto.habittranslation.HabitTranslationDto;
 import greencity.dto.language.LanguageDTO;
 import greencity.dto.language.LanguageTranslationDTO;
 import greencity.dto.language.LanguageVO;
+import greencity.dto.notification.NotificationDto;
 import greencity.dto.shoppinglistitem.*;
 import greencity.dto.tag.TagPostDto;
 import greencity.dto.tag.TagTranslationVO;
@@ -38,6 +39,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import static greencity.enums.NotificationStatus.UNREAD;
 
 public class ModelUtils {
 
@@ -247,13 +250,17 @@ public class ModelUtils {
             .enrollDate(LocalDate.now()).build();
     }
 
+    public static HabitVO getHabitVO() {
+        return HabitVO.builder()
+            .id(1L)
+            .image("string")
+            .build();
+    }
+
     public static HabitFactVO getHabitFactVO() {
         return HabitFactVO.builder()
             .id(1L)
-            .habit(HabitVO.builder()
-                .id(1L)
-                .image("string")
-                .build())
+            .habit(getHabitVO())
             .translations(Collections.singletonList(HabitFactTranslationVO.builder()
                 .id(1L)
                 .content("content")
@@ -271,6 +278,19 @@ public class ModelUtils {
         return HabitFactPostDto.builder()
             .translations(List.of(getLanguageTranslationDTO()))
             .habit(new HabitIdRequestDto(1L))
+            .build();
+    }
+
+    public static HabitFactDtoResponse getHabitFactDtoResponse() {
+        return HabitFactDtoResponse.builder()
+            .id(1L)
+            .habit(getHabitVO())
+            .translations(Collections.singletonList(HabitFactTranslationDto.builder()
+                .id(1L)
+                .content("content")
+                .factOfDayStatus(FactOfDayStatus.POTENTIAL)
+                .language(getLanguageDTO())
+                .build()))
             .build();
     }
 
@@ -400,6 +420,30 @@ public class ModelUtils {
                 new CustomShoppingListItemSaveRequestDto("text3"));
 
         return  new BulkSaveCustomShoppingListItemDto(items);
+    }
+
+    public static Notification getNotification() {
+        return Notification.builder()
+                .id(1L)
+                .status(UNREAD)
+                .type(NotificationType.LIKED_EVENT)
+                .receiver(getUser())
+                .evaluator(getUser())
+                .createdAt(LocalDateTime.now())
+                .expireAt(LocalDateTime.now().plusDays(AppConstant.NOTIFIC_ACTIVE_DAYS_TIME))
+                .build();
+    }
+
+    public static NotificationDto getNotificationDto() {
+        var notification = getNotification();
+        return NotificationDto.builder()
+                .id(notification.getId())
+                .createdAt(notification.getCreatedAt())
+                .relatedEntityId(1L)
+                .evaluatorId(notification.getEvaluator().getId())
+                .status(UNREAD)
+                .type(NotificationType.LIKED_EVENT)
+                .build();
     }
 
 }
