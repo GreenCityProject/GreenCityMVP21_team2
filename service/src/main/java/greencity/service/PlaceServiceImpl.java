@@ -14,7 +14,6 @@ import greencity.repository.CategoryRepo;
 import greencity.repository.PlaceRepo;
 import greencity.dto.place.PlaceInfoDto;
 import greencity.dto.place.PlaceUpdateDto;
-import greencity.repository.PlaceRepo;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -29,6 +28,7 @@ import java.util.stream.Collectors;
 import static greencity.constant.AppConstant.*;
 import static greencity.filters.GeneralPlaceSpecification.*;
 import static java.lang.Math.*;
+import static java.time.ZonedDateTime.now;
 import static java.util.Arrays.*;
 import static java.util.Objects.*;
 import static java.util.Optional.*;
@@ -37,13 +37,12 @@ import static java.util.Optional.*;
 @RequiredArgsConstructor
 public class PlaceServiceImpl implements PlaceService {
     private static final double EARTH_RADIUS = 6371.0;
+    private static final String defaultImage = "default";
 
     private final PlaceRepo placeRepo;
     private final CategoryRepo categoryRepo;
     private final GeocodingService geocodingService;
     private final ModelMapper modelMapper;
-
-    private final String defaultImage = "default";
 
     @Override
     public PlaceResponse createPlace(UserVO user, AddPlaceDto addPlace) {
@@ -84,7 +83,13 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     private Place createPlace(String placeName) {
-        return new Place(placeName, defaultImage, PlaceStatus.APPROVED);
+        return Place.builder()
+                .name(placeName)
+                .createdAt(now())
+                .modifiedAt(now())
+                .titleImage(defaultImage)
+                .status(PlaceStatus.APPROVED)
+                .build();
     }
 
     private void setCategoryToPlace(Place place, Category category) {

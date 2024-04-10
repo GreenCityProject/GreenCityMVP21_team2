@@ -20,6 +20,7 @@ public class AdminPlaceDtoMapper extends AbstractConverter<Place, AdminPlaceDto>
                 .id(place.getId())
                 .status(place.getStatus())
                 .name(place.getName())
+                .modifiedDate(place.getModifiedAt())
                 .category(maToCategoryDto(place.getCategory()))
                 .openingHoursList(mapToOpeningHoursDto(place.getOpeningHours()))
                 .author(mapToPlaceAuthorDto(place.getAuthor()))
