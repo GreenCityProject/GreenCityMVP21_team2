@@ -7,6 +7,8 @@ import greencity.dto.user.UserVO;
 import greencity.dto.place.PlaceInfoDto;
 import greencity.dto.place.PlaceUpdateDto;
 
+import java.util.List;
+
 /**
  * Provides the interface to manage {@code Place} entity.
  */
@@ -27,4 +29,6 @@ public interface PlaceService {
      */
 
     PlaceUpdateDto getPlaceById(Long id);
+
+    List<PlaceResponse> getFavoritePlaces(UserVO user);
 }
