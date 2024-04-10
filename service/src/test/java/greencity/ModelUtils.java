@@ -16,6 +16,7 @@ import greencity.dto.ratingstatistics.RatingStatisticsViewDto;
 import greencity.dto.search.SearchNewsDto;
 import greencity.dto.shoppinglistitem.CustomShoppingListItemResponseDto;
 import greencity.dto.shoppinglistitem.CustomShoppingListItemVO;
+import greencity.dto.specification.SpecificationVO;
 import greencity.dto.tag.*;
 import greencity.dto.user.*;
 import greencity.dto.verifyemail.VerifyEmailVO;
@@ -685,6 +686,28 @@ public class ModelUtils {
             .build();
     }
 
+    public static SpecificationVO getSpecificationVO(){
+        return SpecificationVO.builder()
+                .id(1L)
+                .name("name")
+                .build();
+    }
+
+    public static Specification getSpecification(){
+        return Specification.builder()
+                .id(getSpecificationVO().getId())
+                .name(getSpecificationVO().getName())
+                .build();
+    }
+
+    public static List<SpecificationVO> getSpecificationVOList(){
+        return Arrays.asList(
+                new SpecificationVO(1L,"name1"),
+                new SpecificationVO(2L,"name2"),
+                new SpecificationVO(3L,"name3")
+        );
+    }
+  
     public static RatingStatisticsViewDto getRatingStatisticsViewDto() {
         return RatingStatisticsViewDto.builder()
                 .id("1")
