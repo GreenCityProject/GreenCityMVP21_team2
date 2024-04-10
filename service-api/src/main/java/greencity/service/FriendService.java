@@ -1,6 +1,7 @@
 package greencity.service;
 
 import greencity.dto.PageableDto;
+import greencity.dto.user.UserForListDto;
 import greencity.dto.user.UserManagementDto;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ public interface FriendService {
 
     ResponseEntity<Object> deleteUserFriend(long userId, long friendId);
 
-    List<UserManagementDto> findAllFriends(Long userId);
+    List<UserForListDto> findAllFriends(Long userId, Pageable pageable);
 
     PageableDto findAllNotFriends(Pageable pageable);
 

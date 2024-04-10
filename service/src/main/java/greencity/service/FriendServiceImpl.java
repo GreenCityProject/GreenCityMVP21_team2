@@ -3,7 +3,9 @@ package greencity.service;
 
 import greencity.dto.PageableDto;
 import greencity.dto.friends.UserFriendDto;
+import greencity.dto.user.UserForListDto;
 import greencity.dto.user.UserManagementDto;
+import greencity.entity.Friends;
 import greencity.entity.User;
 import greencity.enums.FriendStatus;
 import greencity.exception.exceptions.BadRequestException;
@@ -19,15 +21,22 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.modelmapper.ModelMapper;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
-@Transactional
-@RequiredArgsConstructor
 public class FriendServiceImpl implements FriendService {
     private final FriendRepo friendRepository;
     private final UserRepo userRepository;
+    private final ModelMapper modelMapper;
+
+    public FriendServiceImpl(FriendRepo friendRepository, UserRepo userRepository, ModelMapper modelMapper) {
+        this.friendRepository = friendRepository;
+        this.userRepository = userRepository;
+        this.modelMapper = modelMapper;
+    }
 
     @Override
     public ResponseEntity<Object> acceptFriendRequest(long userId, long friendId) {
@@ -62,8 +71,11 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public List<UserManagementDto> findAllFriends(Long userId) {
-        return friendRepository.getAllUserFriends(userId);
+    public List<UserForListDto> findAllFriends(Long userId, Pageable pageable) {
+        Page<Friends> friendsPage = friendRepository.getAllUserFriends(userId, pageable);
+        return friendsPage.getContent().stream()
+                .map(friend -> modelMapper.map(friend.getFriend(), UserForListDto.class))
+                .collect(Collectors.toList());
     }
 
     @Override

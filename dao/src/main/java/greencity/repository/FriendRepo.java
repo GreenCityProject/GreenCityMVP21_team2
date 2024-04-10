@@ -2,6 +2,7 @@ package greencity.repository;
 
 import greencity.dto.friends.UserFriendDto;
 import greencity.dto.user.UserManagementDto;
+import greencity.entity.Friends;
 import greencity.entity.User;
 import greencity.enums.FriendStatus;
 import org.springframework.data.domain.Page;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,12 +54,7 @@ public interface FriendRepo extends JpaRepository<User, Long> {
                     + "ON CONFLICT (user_id, friend_id) DO UPDATE SET status = 'REQUEST'")
     void addNewFriend(Long userId, Long friendId);
 
-    @Query(nativeQuery = true, value =
-            "SELECT * FROM users " +
-                    "WHERE id IN (" +
-                    "   (SELECT user_id FROM users_friends WHERE friend_id = :userId AND status = 'FRIEND') " +
-                    "   UNION " +
-                    "   (SELECT friend_id FROM users_friends WHERE user_id = :userId AND status = 'FRIEND')" +
-                    ")")
-    List<UserManagementDto> getAllUserFriends(Long userId);
+    @Query("SELECT f FROM Friends f " +
+            "WHERE (f.friend.id = :userId OR f.user.id = :userId) AND f.status = 'FRIEND'")
+    Page<Friends> getAllUserFriends(@Param("userId") Long userId, Pageable pageable);
 }
