@@ -5,12 +5,14 @@ import static greencity.constant.ErrorMessage.USER_HAS_NO_PERMISSION;
 import static greencity.enums.NotificationStatus.READ;
 import static greencity.enums.NotificationStatus.UNREAD;
 import static java.time.LocalDateTime.*;
+import static java.util.Objects.*;
 
 import greencity.builder.PageableAdvancedBuilder;
 import greencity.constant.AppConstant;
-import greencity.dto.CreatNotificationDto;
-import greencity.dto.PageableAdvancedDto;
+import greencity.dto.notification.TaggedUserNotificationDto;
 import greencity.dto.notification.NotificationDto;
+import greencity.dto.PageableAdvancedDto;
+import greencity.dto.notification.NotificationVO;
 import greencity.dto.user.UserVO;
 import greencity.entity.Notification;
 import greencity.entity.User;
@@ -39,7 +41,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final ModelMapper modelMapper;
 
     @Override
-    public List<NotificationDto> getAllNotifications(Long receiverId) {
+    public List<NotificationVO> getAllNotifications(Long receiverId) {
         var notifications = getNotifications(receiverId,Pageable.unpaged());
         return getPageableNotifications(notifications).getPage();
     }
@@ -50,7 +52,7 @@ public class NotificationServiceImpl implements NotificationService {
 
 
     @Override
-    public List<NotificationDto> getLatestUnreadNotifications(Long receiverId) {
+    public List<NotificationVO> getLatestUnreadNotifications(Long receiverId) {
         var notifications = getUnreadNotificationTranslations(receiverId, getLatestPageable());
         return getPageableNotifications(notifications).getPage();
     }
@@ -64,19 +66,19 @@ public class NotificationServiceImpl implements NotificationService {
                 .withSort(Sort.by(AppConstant.LATEST_NOTIFICATION_SORT_FIELD).descending());
     }
 
-    private PageableAdvancedDto<NotificationDto> getPageableNotifications(Page<Notification> notifications) {
+    private PageableAdvancedDto<NotificationVO> getPageableNotifications(Page<Notification> notifications) {
         var notificationDtos = mapToNotificationDtos(notifications.getContent());
         return PageableAdvancedBuilder.getPageableAdvanced(notificationDtos, notifications);
     }
 
-    private List<NotificationDto> mapToNotificationDtos(List<Notification> translations) {
+    private List<NotificationVO> mapToNotificationDtos(List<Notification> translations) {
         return translations.stream()
                 .map(this::mapToNotificationDto)
                 .toList();
     }
 
-    private NotificationDto mapToNotificationDto(Notification notification) {
-        return modelMapper.map(notification, NotificationDto.class);
+    private NotificationVO mapToNotificationDto(Notification notification) {
+        return modelMapper.map(notification, NotificationVO.class);
     }
 
 
@@ -95,7 +97,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public NotificationDto changeStatusToRead(Long id, UserVO user) {
+    public NotificationVO changeStatusToRead(Long id, UserVO user) {
         var notification = getNotificationWithUserById(id);
         checkUserHasPermissionToAccess(user,notification);
         decreaseActiveNotificationTime(notification);
@@ -106,7 +108,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public NotificationDto changeStatusToUnread(Long id, UserVO user) {
+    public NotificationVO changeStatusToUnread(Long id, UserVO user) {
         var notification = getNotificationWithUserById(id);
         checkUserHasPermissionToAccess(user,notification);
         changeStatus(notification,UNREAD);
@@ -143,12 +145,12 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Async
     @Transactional
-    public void createNotification(CreatNotificationDto creatNotificationDto) {
-        Notification newNotification = buildNotificationObject(creatNotificationDto);
+    public void createNotification(NotificationDto notificationDto) {
+        Notification newNotification = buildNotificationObject(notificationDto);
         saveNotification(newNotification);
     }
-    
-    private Notification buildNotificationObject(CreatNotificationDto notificationDto) {
+
+    private Notification buildNotificationObject(NotificationDto notificationDto) {
         var evaluator = mapToUser(notificationDto.getEvaluator());
         var receiver = mapToUser(notificationDto.getReceiver());
 
@@ -171,6 +173,15 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepo.save(newNotification);
     }
 
+    @Override
+    @Transactional
+    @Async
+    public void createTaggedUserNotifications(TaggedUserNotificationDto notification) {
+        requireNonNull(notification.getReceivers())
+                .forEach(n -> createNotification(new NotificationDto(notification.getEvaluator(),
+                        notification.getNotificationType(),
+                        n, notification.getRelatedEntityId())));
+    }
 }
 
 

@@ -10,8 +10,21 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface EventsRepo extends JpaRepository<Events, Long>, JpaSpecificationExecutor<Events> {
+
+    /**
+     * Method returns event {@link Events} joined with followers and attenders.
+     *
+     * @param id id of event.
+     * @return {@link Events}.
+     */
+
+    @Query("SELECT e From Events e JOIN FETCH e.eventAttender a WHERE e.id =?1")
+    Optional<Events> findByIdWithAttenders(Long id);
+
     /**
      * Method returns all {@link Events} by page.
      *

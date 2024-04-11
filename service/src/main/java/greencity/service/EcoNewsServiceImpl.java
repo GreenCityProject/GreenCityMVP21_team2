@@ -4,7 +4,7 @@ import greencity.annotations.RatingCalculationEnum;
 import greencity.client.RestClient;
 import greencity.constant.CacheConstants;
 import greencity.constant.ErrorMessage;
-import greencity.dto.CreatNotificationDto;
+import greencity.dto.notification.NotificationDto;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.PageableDto;
 import greencity.dto.econews.*;
@@ -523,7 +523,7 @@ public class EcoNewsServiceImpl implements EcoNewsService {
         } else {
             ecoNewsVO.getUsersLikedNews().add(userVO);
 
-            CreatNotificationDto notification = new CreatNotificationDto(userVO, NotificationType.LIKED_NEWS, ecoNewsVO.getAuthor(), ecoNewsVO.getId());
+            NotificationDto notification = new NotificationDto(userVO, NotificationType.LIKED_NEWS, ecoNewsVO.getAuthor(), ecoNewsVO.getId());
             notificationService.createNotification(notification);
         }
         ecoNewsRepo.save(modelMapper.map(ecoNewsVO, EcoNews.class));

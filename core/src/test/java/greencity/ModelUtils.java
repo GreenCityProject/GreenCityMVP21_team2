@@ -16,7 +16,7 @@ import greencity.dto.habittranslation.HabitTranslationDto;
 import greencity.dto.language.LanguageDTO;
 import greencity.dto.language.LanguageTranslationDTO;
 import greencity.dto.language.LanguageVO;
-import greencity.dto.notification.NotificationDto;
+import greencity.dto.notification.NotificationVO;
 import greencity.dto.shoppinglistitem.*;
 import greencity.dto.tag.TagPostDto;
 import greencity.dto.tag.TagTranslationVO;
@@ -434,9 +434,9 @@ public class ModelUtils {
                 .build();
     }
 
-    public static NotificationDto getNotificationDto() {
+    public static NotificationVO getNotificationDto() {
         var notification = getNotification();
-        return NotificationDto.builder()
+        return NotificationVO.builder()
                 .id(notification.getId())
                 .createdAt(notification.getCreatedAt())
                 .relatedEntityId(1L)

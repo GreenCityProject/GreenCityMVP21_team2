@@ -3,6 +3,7 @@ package greencity.service;
 import greencity.constant.ErrorMessage;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.events.*;
+import greencity.dto.notification.NotificationDto;
 import greencity.dto.tag.TagTranslationVO;
 import greencity.dto.tag.TagUaEnDto;
 import greencity.dto.tag.TagVO;
@@ -15,10 +16,7 @@ import greencity.exception.exceptions.NotFoundException;
 import greencity.exception.exceptions.NotSavedException;
 import greencity.filters.EventSpecification;
 import greencity.filters.SearchCriteria;
-import greencity.repository.EventDateLocationsRepo;
-import greencity.repository.EventsImagesRepo;
-import greencity.repository.EventsRepo;
-import greencity.repository.UserRepo;
+import greencity.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.EnableCaching;
@@ -30,11 +28,11 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static greencity.enums.NotificationType.*;
+import static java.time.ZonedDateTime.*;
 
 @Service
 @EnableCaching
@@ -52,6 +50,7 @@ public class EventsServiceImpl implements EventsService {
     private int maxDateLocationListSize = 7;
     private String defaultImage = "https://csb10032000a548f571" +
             ".blob.core.windows.net/allfiles/e95283db-3f71-4867-95cd-e28bf0a6afebillustration-earth.png";
+    private final NotificationService notificationService;
 
     @Override
     public EventDto save(AddEventDtoRequest addEventDtoRequest, List<MultipartFile> images, Long userId) {
@@ -62,7 +61,7 @@ public class EventsServiceImpl implements EventsService {
         User user = userRepo.getById(userId);
         eventsDto.setOrganizer(modelMapper.map(user, EventAuthorDto.class));
 
-        eventsDto.setCreationDate(ZonedDateTime.now().toString());
+        eventsDto.setCreationDate(now().toString());
 
         List<TagVO> tagVOS = tagService.findTagsByNamesAndType(
                 addEventDtoRequest.getTags(), TagType.EVENT);
@@ -74,7 +73,7 @@ public class EventsServiceImpl implements EventsService {
         eventsDto.setDates(eventDateLocationDtos);
         Events events = modelMapper.map(eventsDto, Events.class);
         Events finalEvent = converterEventDtoToEvent(eventsDto, events);
-        finalEvent.setCreationDate(ZonedDateTime.parse(eventsDto.getCreationDate()));
+        finalEvent.setCreationDate(parse(eventsDto.getCreationDate()));
         finalEvent.setTags(tagVOS.stream().map(tagVO -> modelMapper.map(tagVO, Tag.class)).toList());
         try {
             eventsRepo.save(finalEvent);
@@ -130,18 +129,43 @@ public class EventsServiceImpl implements EventsService {
 
     @Override
     public void delete(Long id, UserVO user) {
-        EventVO eventVO = findById(id);
-        if (user.getRole() != Role.ROLE_ADMIN && !user.getId().equals(eventVO.getOrganizer().getId())) {
+        Events event = eventsRepo.findByIdWithAttenders(id)
+                .orElseThrow(() -> new NotFoundException(ErrorMessage.EVENTS_NOT_FOUND_BY_ID + id));
+
+        if (user.getRole() != Role.ROLE_ADMIN && !user.getId().equals(event.getOrganizer().getId())) {
             throw new BadRequestException(ErrorMessage.USER_HAS_NO_PERMISSION);
         }
+        createCanceledNotificationsIfEventIsActive(user,event);
         eventsRepo.deleteById(id);
+    }
+
+    private void createCanceledNotificationsIfEventIsActive(UserVO user, Events event) {
+        List<EventDateLocation> locations = eventDateLocationsRepo.findAllByEventId(event.getId());
+        locations.forEach(l -> System.out.println(l.getFinishDate()));
+
+        if(isEventActive(locations)){
+            createCanceledNotificationEvent(user, event);
+        }
+    }
+
+    private boolean isEventActive(List<EventDateLocation> locations) {
+        return locations.stream()
+                .map(EventDateLocation::getFinishDate)
+                .anyMatch(finishDate -> finishDate.isAfter(now()));
+    }
+
+    private void createCanceledNotificationEvent(UserVO user, Events event){
+        event.getEventAttender().forEach(u -> {
+            NotificationDto notification = new NotificationDto(user, CANCELED_EVENT, mapToUserVO(u), event.getId());
+            notificationService.createNotification(notification);
+        });
     }
 
     @Override
     public EventDto update(EventDtoToUpdate eventDtoToUpdate, List<MultipartFile> images,  UserVO user) {
         EventDto eventDto = converterEventDtoYoUpdateToEventDto(eventDtoToUpdate);
         Long eventId = eventDto.getId();
-        Events events = eventsRepo.findById(eventId).get();
+        Events events = eventsRepo.findByIdWithAttenders(eventId).get();
         if (user.getRole() != Role.ROLE_ADMIN && !user.getId().equals(events.getOrganizer().getId())) {
             throw new BadRequestException(ErrorMessage.USER_HAS_NO_PERMISSION);
         }
@@ -165,7 +189,16 @@ public class EventsServiceImpl implements EventsService {
         } catch (DataIntegrityViolationException e) {
             throw new NotSavedException(ErrorMessage.EVENTS_NOT_SAVED);
         }
+        createUpdatedEventNotification(user, events);
+
         return eventDto;
+    }
+
+    private void createUpdatedEventNotification(UserVO user, Events events) {
+        events.getEventAttender().forEach(u -> {
+            NotificationDto notification = new NotificationDto(user, UPDATED_EVENT,mapToUserVO(u), events.getId());
+            notificationService.createNotification(notification);
+        });
     }
 
     @Override
@@ -324,8 +357,8 @@ public class EventsServiceImpl implements EventsService {
 
     private void setImagesInEventDto (EventDto eventDto, List<MultipartFile> images){
         if (images != null) {
-            eventDto.setTitleImage(fileService.upload(images.getFirst()));
-            images.removeFirst();
+            eventDto.setTitleImage(fileService.upload(images.get(0)));
+            images.remove(0);
             eventDto.setAdditionalImages(images.stream()
                     .map(fileService::upload)
                     .collect(Collectors.toList()));
@@ -351,7 +384,7 @@ public class EventsServiceImpl implements EventsService {
         eventDto.setIsSubscribed(event.getEventAttender().contains(user));
         eventDto.setIsFavorite(event.getEventsFollowers().contains(user));
         eventDto.setEnded(event.getDatesLocations().stream().allMatch(eventDateLocation ->
-                eventDateLocation.getFinishDate().isBefore(ZonedDateTime.now())));
+                eventDateLocation.getFinishDate().isBefore(now())));
         return eventDto;
     }
 
@@ -392,7 +425,7 @@ public class EventsServiceImpl implements EventsService {
     private void checkEvent (List<EventDateLocationDto> eventDateLocationDtos, List<MultipartFile> images){
         HashSet<ZonedDateTime> dateSet = new HashSet<>();
         if (eventDateLocationDtos.stream().anyMatch(eventDateLocationDto ->
-                eventDateLocationDto.getStartDate().isBefore(ZonedDateTime.now()))){
+                eventDateLocationDto.getStartDate().isBefore(now()))){
             throw new NotSavedException(ErrorMessage.EVENT_DATE_GREATER_CURRENT_DATE);
         }
         if (((images!= null)&&(images.size() > maxImagesListSize)) ||
@@ -441,10 +474,10 @@ public class EventsServiceImpl implements EventsService {
             setValueIfNotEmpty(criteriaList, Events_.ORGANIZER, Events_.ORGANIZER, user.getEmail());
         }
         if (eventViewDto.getEventTime().equalsIgnoreCase("upcoming")) {
-            setValueIfNotEmpty(criteriaList, Events_.DATES_LOCATIONS, EventDateLocation_.START_DATE, ZonedDateTime.now().toString());
+            setValueIfNotEmpty(criteriaList, Events_.DATES_LOCATIONS, EventDateLocation_.START_DATE, now().toString());
         }
         if (eventViewDto.getEventTime().equalsIgnoreCase("passed")) {
-            setValueIfNotEmpty(criteriaList, Events_.DATES_LOCATIONS, EventDateLocation_.FINISH_DATE, ZonedDateTime.now().toString());
+            setValueIfNotEmpty(criteriaList, Events_.DATES_LOCATIONS, EventDateLocation_.FINISH_DATE, now().toString());
         }
         setValueIfNotEmpty(criteriaList, Events_.TAGS, Events_.TAGS, eventViewDto.getType());
         return criteriaList;
@@ -457,5 +490,9 @@ public class EventsServiceImpl implements EventsService {
                     .value(value)
                     .build());
         }
+    }
+
+    private UserVO mapToUserVO(User user){
+        return modelMapper.map(user, UserVO.class);
     }
 }
