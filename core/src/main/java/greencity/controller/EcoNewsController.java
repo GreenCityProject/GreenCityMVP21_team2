@@ -14,6 +14,7 @@ import greencity.dto.econews.UpdateEcoNewsDto;
 import greencity.dto.tag.TagDto;
 import greencity.dto.tag.TagVO;
 import greencity.dto.user.UserVO;
+import greencity.enums.Role;
 import greencity.exception.exceptions.NotFoundException;
 import greencity.service.EcoNewsService;
 import greencity.service.FileService;
@@ -254,11 +255,16 @@ public class EcoNewsController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
         @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+        @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN),
         @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
     })
     @DeleteMapping("/{econewsId}")
     public ResponseEntity<Object> delete(@PathVariable Long econewsId,
                                          @Parameter(hidden = true) @CurrentUser UserVO user) {
+        var ecoNews = ecoNewsService.getById(econewsId);
+        if (user.getRole() != Role.ROLE_ADMIN && ecoNews.getAuthor().getId() != user.getId()){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         ecoNewsService.delete(econewsId, user);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
