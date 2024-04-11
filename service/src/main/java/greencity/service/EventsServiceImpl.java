@@ -1,5 +1,6 @@
 package greencity.service;
 
+import com.google.maps.model.GeocodingResult;
 import greencity.constant.ErrorMessage;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.events.*;
@@ -30,11 +31,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @EnableCaching
@@ -48,6 +47,7 @@ public class EventsServiceImpl implements EventsService {
     private final ModelMapper modelMapper;
     private final TagsService tagService;
     private final FileService fileService;
+    private final GeocodingService geocodingService;
     private int maxImagesListSize = 6;
     private int maxDateLocationListSize = 7;
     private String defaultImage = "https://csb10032000a548f571" +
@@ -302,10 +302,7 @@ public class EventsServiceImpl implements EventsService {
                 .startDate(eventDateLocation.getStartDate())
                 .finishDate(eventDateLocation.getFinishDate())
                 .onlineLink(eventDateLocation.getOnlineLink())
-                .coordinates(AddressDto.builder()
-                        .latitude(eventDateLocation.getLatitude())
-                        .longitude(eventDateLocation.getLongitude())
-                        .build())
+                .coordinates(getAddressFromCoordinates(eventDateLocation.getLatitude(), eventDateLocation.getLongitude()))
                 .build();
     }
 
@@ -457,5 +454,64 @@ public class EventsServiceImpl implements EventsService {
                     .value(value)
                     .build());
         }
+    }
+
+    private AddressDto getAddressFromCoordinates(Double latitude, Double longitude) {
+        GeocodingResult[] resultsEn = geocodingService.getAddress(latitude, longitude, "en");
+        GeocodingResult[] resultsUa = geocodingService.getAddress(latitude, longitude, "ua");
+
+        if ((resultsEn != null && resultsEn.length > 0) && (resultsUa != null && resultsUa.length > 0)){
+            GeocodingResult resultEn = resultsEn[0];
+            GeocodingResult resultUa = resultsUa[0];
+            AddressDto addressDto = new AddressDto();
+
+            Stream.of(resultEn.addressComponents)
+                    .filter(component -> component.types != null && component.types.length > 0)
+                    .forEach(component -> {
+                        switch (component.types[0].toString()) {
+                            case "locality":
+                                addressDto.setCityEn(component.longName);
+                                break;
+                            case "country":
+                                addressDto.setCountryEn(component.longName);
+                                break;
+                            case "route":
+                                addressDto.setStreetEn(component.longName);
+                                break;
+                            case "administrative_area_level_1":
+                                addressDto.setRegionEn(component.longName);
+                                break;
+                            case "street_number":
+                                addressDto.setHouseNumber(component.longName);
+                                break;
+                        }
+                    });
+            Stream.of(resultUa.addressComponents)
+                    .filter(component -> component.types != null && component.types.length > 0)
+                    .forEach(component -> {
+                        switch (component.types[0].toString()) {
+                            case "locality":
+                                addressDto.setCityUa(component.longName);
+                                break;
+                            case "country":
+                                addressDto.setCountryUa(component.longName);
+                                break;
+                            case "route":
+                                addressDto.setStreetUa(component.longName);
+                                break;
+                            case "administrative_area_level_1":
+                                addressDto.setRegionUa(component.longName);
+                                break;
+                        }
+                    });
+
+            addressDto.setLatitude(resultEn.geometry.location.lat);
+            addressDto.setLongitude(resultEn.geometry.location.lng);
+            addressDto.setFormattedAddressEn(resultEn.formattedAddress);
+            addressDto.setFormattedAddressUa(resultUa.formattedAddress);
+
+            return addressDto;
+        }
+        return null;
     }
 }
