@@ -183,6 +183,8 @@ public class SecurityConfig {
                                 "/events/comments/likes/count/{commentId}",
                                 "/events/comments/replies/active/{parentCommentId}",
                                 "/events/comments/replies/active/count/{parentCommentId}",
+                                "/place/emailNotification/getAllSubscribers",
+                                "/place/emailNotification/getAllSubscribers/{frequency}",
                                 "/shopping-list-items",
                                 "/habit/assign/allForCurrentUser",
                                 "/habit/assign/active/{date}",
@@ -252,7 +254,7 @@ public class SecurityConfig {
                                 "/events/update",
                                 "/ownSecurity",
                                 "/user/profile",
-                                "place/emailNotification/updateFrequency",
+                                "/place/emailNotification/updateFrequency",
                                 HABIT_ASSIGN_ID + "/update-habit-duration",
                                 "/habit/assign/{habitAssignId}/updateProgressNotificationHasDisplayed",
                                 HABIT_ASSIGN_ID + "/allUserAndCustomList")

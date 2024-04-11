@@ -6,6 +6,8 @@ import greencity.dto.user.UserVO;
 import greencity.enums.EmailNotification;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 /**
  * Provides the interface to manage {@code Place} entity.
  */
@@ -60,4 +62,17 @@ public interface PlaceService {
      */
     PlaceSubscribeResponseDto updateEmailNotificationFrequency(UserVO userVO, EmailNotification emailNotification);
 
+    /**
+     * Method return list of places updates subscribers.
+     *
+     * @return list of {@link PlaceSubscribeResponseDto} instance.
+     */
+    List<PlaceSubscribeResponseDto> getAllPlaceUpdatesSubscribers();
+
+    /**
+     * Method return list of places updates subscribers by frequency.
+     *
+     * @return list of {@link PlaceSubscribeResponseDto} instance.
+     */
+    List<PlaceSubscribeResponseDto> getAllPlaceUpdatesSubscribersByFrequency(EmailNotification emailNotification);
 }

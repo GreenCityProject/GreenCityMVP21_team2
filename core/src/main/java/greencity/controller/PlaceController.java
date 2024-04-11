@@ -19,7 +19,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.servlet.function.EntityResponse;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/place")
@@ -155,18 +156,41 @@ public class PlaceController {
             @RequestBody PlaceSubscribeDto placeSubscribeDto,
             @Parameter(hidden = true) @CurrentUser UserVO userVO
     ){
-        return ResponseEntity.status(HttpStatus.OK).body(placeService.updateEmailNotificationFrequency(userVO, placeSubscribeDto.getEmailNotification()));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(placeService.updateEmailNotificationFrequency(userVO, placeSubscribeDto.getEmailNotification()));
     }
 
-    @GetMapping("/emailNotification/getAll")
-    public EntityResponse getAllPlaceUpdateSubscribers(){
-        return null;
+    /**
+     * Method return list of place updates subscribers
+     *
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @GetMapping("/emailNotification/getAllSubscribers")
+    public ResponseEntity<List<PlaceSubscribeResponseDto>> getAllPlaceUpdateSubscribers(){
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.getAllPlaceUpdatesSubscribers());
     }
 
-    @GetMapping("/emailNotification/getAll/{frequency}")
-    public EntityResponse getAllPlaceUpdateSubscribersByFrequency(
+    /**
+     * Method return list of place updates subscribers by frequency.
+     *
+     * @param frequency of the {@link EmailNotification}.
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @GetMapping("/emailNotification/getAllSubscribers/{frequency}")
+    public ResponseEntity<List<PlaceSubscribeResponseDto>> getAllPlaceUpdateSubscribersByFrequency(
             @PathVariable EmailNotification frequency){
-        return null;
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.getAllPlaceUpdatesSubscribersByFrequency(frequency));
     }
-
 }

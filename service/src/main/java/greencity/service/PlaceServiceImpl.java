@@ -14,7 +14,6 @@ import greencity.filters.SearchCriteria;
 import greencity.repository.CategoryRepo;
 import greencity.repository.PlaceRepo;
 import greencity.repository.PlaceUpdatesSubscribersRepo;
-import greencity.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -195,5 +193,34 @@ public class PlaceServiceImpl implements PlaceService {
             throw new BadRequestException("Nothing to update. Current frequency: " + emailNotification.toString());
         placeUpdatesSubscribersRepo.updateEmailNotificationByUserId(userVO.getId(), emailNotification);
         return new PlaceSubscribeResponseDto(emailNotification, userVO.getId());
+    }
+
+    @Override
+    public List<PlaceSubscribeResponseDto> getAllPlaceUpdatesSubscribers() {
+        List<PlaceUpdatesSubscribers> subscribers = placeUpdatesSubscribersRepo.findAll();
+        if (subscribers.isEmpty()) throw new BadRequestException("Empty raw");
+        List<PlaceSubscribeResponseDto> subscribersDto = new ArrayList<>();
+        for (PlaceUpdatesSubscribers subscriber : subscribers) {
+            subscribersDto.add(PlaceSubscribeResponseDto.builder()
+                    .emailNotification(subscriber.getEmailNotification())
+                    .userId(subscriber.getUser().getId())
+                    .build());
+        }
+        return subscribersDto;
+    }
+
+    @Override
+    public List<PlaceSubscribeResponseDto> getAllPlaceUpdatesSubscribersByFrequency(EmailNotification emailNotification) {
+        List<PlaceUpdatesSubscribers> subscribers = placeUpdatesSubscribersRepo.findAllByEmailNotification(emailNotification);
+        if (subscribers.isEmpty()) throw new BadRequestException("Empty raw");
+        List<PlaceSubscribeResponseDto> subscribersDto = new ArrayList<>();
+
+        for (PlaceUpdatesSubscribers subscriber : subscribers) {
+            subscribersDto.add(PlaceSubscribeResponseDto.builder()
+                    .emailNotification(subscriber.getEmailNotification())
+                    .userId(subscriber.getUser().getId())
+                    .build());
+        }
+        return subscribersDto;
     }
 }
