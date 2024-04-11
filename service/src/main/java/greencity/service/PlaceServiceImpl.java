@@ -1,23 +1,19 @@
 package greencity.service;
 
 import greencity.constant.ErrorMessage;
-import greencity.dto.place.AddPlaceDto;
-import greencity.dto.place.OpeningHoursDto;
-import greencity.dto.place.PlaceResponse;
+import greencity.dto.place.*;
 import greencity.dto.user.UserVO;
 import greencity.entity.*;
 import greencity.enums.PlaceStatus;
 import greencity.exception.exceptions.NotFoundException;
 import greencity.repository.CategoryRepo;
 import greencity.repository.PlaceRepo;
-import greencity.dto.place.PlaceInfoDto;
-import greencity.dto.place.PlaceUpdateDto;
-import greencity.repository.PlaceRepo;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static greencity.constant.AppConstant.*;
@@ -104,4 +100,20 @@ public class PlaceServiceImpl implements PlaceService {
     public PlaceUpdateDto getPlaceById(Long id){
         return modelMapper.map(placeRepo.findById(id), PlaceUpdateDto.class);
     }
+
+    @Override
+    public List<PlaceInfoDto> getAllPlaceByName(SearchPlaceDto searchPlaceDto, UserVO user, Locale locale) {
+        var placeList = placeRepo.findAllByName(searchPlaceDto.getName());
+        var city = searchPlaceDto.getCity() != null ? searchPlaceDto.getCity() : user.getCity();
+
+        return placeList.stream()
+                .filter(place ->
+                        (locale.getLanguage().equals("uk") ? place.getLocation().getAddressUa() : place.getLocation().getAddress())
+                                .contains(city))
+                .map(place -> modelMapper.map(place, PlaceInfoDto.class))
+                .collect(Collectors.toList());
+    }
+
+
+
 }

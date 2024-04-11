@@ -1,11 +1,10 @@
 package greencity.service;
 
-import greencity.dto.place.AddPlaceDto;
-import greencity.dto.place.PlaceResponse;
+import greencity.dto.place.*;
 import greencity.dto.user.UserVO;
 
-import greencity.dto.place.PlaceInfoDto;
-import greencity.dto.place.PlaceUpdateDto;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Provides the interface to manage {@code Place} entity.
@@ -27,4 +26,6 @@ public interface PlaceService {
      */
 
     PlaceUpdateDto getPlaceById(Long id);
+
+    List<PlaceInfoDto> getAllPlaceByName (SearchPlaceDto searchPlaceDto, UserVO user, Locale locale);
 }

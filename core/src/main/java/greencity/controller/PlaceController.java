@@ -1,18 +1,17 @@
 package greencity.controller;
 
 import greencity.annotations.CurrentUser;
+import greencity.annotations.ValidLanguage;
 import greencity.constant.HttpStatuses;
 import greencity.constant.SwaggerExampleModel;
-import greencity.dto.place.AddPlaceDto;
-import greencity.dto.place.PlaceResponse;
+import greencity.dto.place.*;
 import greencity.dto.user.UserVO;
 import greencity.service.PlaceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import greencity.dto.place.PlaceInfoDto;
-import greencity.dto.place.PlaceUpdateDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +22,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.Locale;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/place")
@@ -86,4 +88,24 @@ public class PlaceController {
     public ResponseEntity<PlaceUpdateDto> getPlaceById(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.OK).body(placeService.getPlaceById(id));
     }
+
+
+    @Operation(summary = "Get place by name and city.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @GetMapping("/info/name")
+    public ResponseEntity<List<PlaceInfoDto>> getAllPlaceByName(@Valid @RequestBody SearchPlaceDto searchPlaceDto,
+            @Parameter(hidden = true) @ValidLanguage Locale locale,
+            @Parameter(hidden = true) @CurrentUser UserVO user){
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.getAllPlaceByName(searchPlaceDto, user, locale));
+
+    }
+
+
+
+
+
+
 }
