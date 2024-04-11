@@ -176,6 +176,8 @@
     <include file="db/changelog/logs/ch-drop-places-table-Bokalo.xml"/>
     <include file="db/changelog/logs/ch-drop-news-subscribers-table-Bokalo.xml"/>
     <include file="db/changelog/logs/ch-drop-user-friends-table-Bokalo.xml"/>
+    <include file="db/changelog/logs/ch-add-column-friends-Baider.xml"/>
+    <include file="db/changelog/logs/ch-drop-row-ru-in-languages-table-Baider.xml"/>
     <include file="db/changelog/logs/ch-add-table-events-Chekhovska.xml"/>
     <include file="db/changelog/logs/ch-add-table-event-comment-Chekhovska.xml"/>
     <include file="db/changelog/logs/ch-add-table-notification.xml"/>
