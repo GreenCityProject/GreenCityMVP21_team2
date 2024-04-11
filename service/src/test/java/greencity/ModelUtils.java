@@ -1,5 +1,6 @@
 package greencity;
 
+import greencity.annotations.RatingCalculationEnum;
 import greencity.constant.AppConstant;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.econews.*;
@@ -9,10 +10,13 @@ import greencity.dto.habitfact.*;
 import greencity.dto.language.LanguageDTO;
 import greencity.dto.language.LanguageTranslationDTO;
 import greencity.dto.language.LanguageVO;
+import greencity.dto.notification.NotificationDto;
 import greencity.dto.ownsecurity.OwnSecurityVO;
+import greencity.dto.ratingstatistics.RatingStatisticsViewDto;
 import greencity.dto.search.SearchNewsDto;
 import greencity.dto.shoppinglistitem.CustomShoppingListItemResponseDto;
 import greencity.dto.shoppinglistitem.CustomShoppingListItemVO;
+import greencity.dto.specification.SpecificationVO;
 import greencity.dto.tag.*;
 import greencity.dto.user.*;
 import greencity.dto.verifyemail.VerifyEmailVO;
@@ -31,6 +35,8 @@ import java.nio.file.Paths;
 import java.security.Principal;
 import java.time.*;
 import java.util.*;
+
+import static greencity.enums.NotificationStatus.*;
 import static greencity.enums.UserStatus.ACTIVATED;
 
 public class ModelUtils {
@@ -317,6 +323,17 @@ public class ModelUtils {
                 .shoppingListItem(
                     new ShoppingListItem(4L, Collections.emptyList(), Collections.emptySet(), Collections.emptyList()))
                 .build());
+    }
+
+    public static ShoppingListItemTranslation getShoppingListItemTranslationObject() {
+        return ShoppingListItemTranslation.builder()
+                .id(2L)
+                .language(new Language(1L, AppConstant.DEFAULT_LANGUAGE_CODE, Collections.emptyList(),
+                        Collections.emptyList()))
+                .content("Buy a bamboo toothbrush")
+                .shoppingListItem(
+                        new ShoppingListItem(1L, Collections.emptyList(), Collections.emptySet(), Collections.emptyList()))
+                .build();
     }
 
     public static HabitFactTranslation getFactTranslation() {
@@ -667,5 +684,65 @@ public class ModelUtils {
             .text("item")
             .status(ShoppingListItemStatus.INPROGRESS)
             .build();
+    }
+
+    public static SpecificationVO getSpecificationVO(){
+        return SpecificationVO.builder()
+                .id(1L)
+                .name("name")
+                .build();
+    }
+
+    public static Specification getSpecification(){
+        return Specification.builder()
+                .id(getSpecificationVO().getId())
+                .name(getSpecificationVO().getName())
+                .build();
+    }
+
+    public static List<SpecificationVO> getSpecificationVOList(){
+        return Arrays.asList(
+                new SpecificationVO(1L,"name1"),
+                new SpecificationVO(2L,"name2"),
+                new SpecificationVO(3L,"name3")
+        );
+    }
+  
+    public static RatingStatisticsViewDto getRatingStatisticsViewDto() {
+        return RatingStatisticsViewDto.builder()
+                .id("1")
+                .eventName(RatingCalculationEnum.ADD_COMMENT.name())
+                .userId("1")
+                .userEmail("useremail11@mail.com")
+                .startDate(LocalDate.now().minusDays(3).toString())
+                .endDate(LocalDate.now().plusDays(3).toString())
+                .pointsChanged("9")
+                .currentRating("100")
+                .build();
+    }
+  
+    public static Notification getNotification() {
+        return Notification.builder()
+                .id(1L)
+                .status(UNREAD)
+                .type(NotificationType.LIKED_EVENT)
+                .receiver(getUser())
+                .evaluator(getUser())
+                .createdAt(LocalDateTime.now())
+                .expireAt(LocalDateTime.now().plusDays(AppConstant.NOTIFIC_ACTIVE_DAYS_TIME))
+                .build();
+    }
+
+    public static NotificationDto getNotificationDto() {
+        var notification = getNotification();
+        return NotificationDto.builder()
+                .id(notification.getId())
+                .createdAt(notification.getCreatedAt())
+                .relatedEntityId(1L)
+                .evaluatorId(notification.getEvaluator().getId())
+                .status(UNREAD)
+                .relatedEntityId(notification.getRelatedEntityId())
+                .type(NotificationType.LIKED_EVENT)
+                .build();
     }
 }

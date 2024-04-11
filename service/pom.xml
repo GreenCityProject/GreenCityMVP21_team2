@@ -158,6 +158,11 @@
             <artifactId>httpclient</artifactId>
             <version>${apache.http.client.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-api</artifactId>
+            <version>3.3.4</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
-
 </project>
