@@ -13,8 +13,10 @@
         </preConditions>
         <addColumn tableName="users_friends">
             <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true"/>
             </column>
         </addColumn>
     </changeSet>
+        <changeSet id="UpdateStatusColumnType" author="Baider">
+            <modifyDataType tableName="users_friends" columnName="status" newDataType="VARCHAR(50)"/>
+        </changeSet>
 </databaseChangeLog>
