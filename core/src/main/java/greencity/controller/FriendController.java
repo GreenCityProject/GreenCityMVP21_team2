@@ -1,6 +1,6 @@
 package greencity.controller;
+
 import greencity.dto.friends.UserFriendDto;
-import greencity.dto.user.UserForListDto;
 import greencity.service.UserService;
 import greencity.telegram.TelegramMessageSender;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +13,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import lombok.AllArgsConstructor;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -52,26 +50,15 @@ public class FriendController {
     }
 
     @Operation(summary = "Accept friend request")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
-            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
-            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
-            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),
-    })
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = HttpStatuses.OK), @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST), @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED), @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),})
     @PatchMapping("/{friendId}/acceptFriend")
-    public ResponseEntity<Object> acceptFriendRequest(@PathVariable long friendId,
-                                                      @Parameter(hidden = true) @CurrentUser UserVO userVO) {
+    public ResponseEntity<Object> acceptFriendRequest(@PathVariable long friendId, @Parameter(hidden = true) @CurrentUser UserVO userVO) {
         friendService.acceptFriendRequest(userVO.getId(), friendId);
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Add new friend")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
-            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
-            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
-            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),
-    })
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = HttpStatuses.OK), @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST), @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED), @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),})
     @PostMapping("/{friendId}")
     public ResponseEntity<Object> addNewFriend(@PathVariable long friendId, @Parameter(hidden = true) @CurrentUser UserVO userVO) {
         friendService.addNewFriend(userVO.getId(), friendId);
@@ -82,6 +69,7 @@ public class FriendController {
         response.put("message", String.format("Friend '%s' added successfully!", friendName));
         return ResponseEntity.ok(response);
     }
+
     private void sendTelegramMessage(String message) {
         TelegramMessageSender sender = new TelegramMessageSender(botToken);
         sender.sendMessage(chatId, message);
@@ -104,12 +92,7 @@ public class FriendController {
         return ResponseEntity.ok(response);
     }
 
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
-            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
-            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
-            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),
-    })
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = HttpStatuses.OK), @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST), @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED), @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),})
     @GetMapping("/friends")
     public ResponseEntity<List<UserFriendDto>> findAllFriends(@CurrentUser UserVO userVO, Pageable pageable) {
         List<UserFriendDto> friends = friendService.findAllFriends(userVO.getId(), pageable);
@@ -118,11 +101,9 @@ public class FriendController {
         for (UserFriendDto friend : friends) {
             friendNames.add(friend.getName());
         }
-
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Friends: " + String.join(", ", friendNames));
         response.put("friends", friends);
-
         return ResponseEntity.ok((List<UserFriendDto>) response);
     }
 
