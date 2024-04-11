@@ -2,6 +2,7 @@ package greencity.service;
 
 import greencity.annotations.RatingCalculationEnum;
 import greencity.constant.ErrorMessage;
+import greencity.dto.CreatNotificationDto;
 import greencity.dto.PageableDto;
 import greencity.dto.econews.EcoNewsVO;
 import greencity.dto.econewscomment.*;
@@ -9,6 +10,7 @@ import greencity.dto.user.UserVO;
 import greencity.entity.EcoNews;
 import greencity.entity.EcoNewsComment;
 import greencity.entity.User;
+import greencity.enums.NotificationType;
 import greencity.enums.Role;
 import greencity.exception.exceptions.BadRequestException;
 import greencity.exception.exceptions.NotFoundException;
@@ -38,6 +40,7 @@ public class EcoNewsCommentServiceImpl implements EcoNewsCommentService {
     private final greencity.rating.RatingCalculation ratingCalculation;
     private final HttpServletRequest httpServletRequest;
     private final EcoNewsRepo ecoNewsRepo;
+    private final NotificationService notificationService;
 
     /**
      * Method to save {@link greencity.entity.EcoNewsComment}.
@@ -64,10 +67,16 @@ public class EcoNewsCommentServiceImpl implements EcoNewsCommentService {
                     () -> new BadRequestException(ErrorMessage.COMMENT_NOT_FOUND_EXCEPTION));
             if (parentComment.getParentComment() == null) {
                 ecoNewsComment.setParentComment(parentComment);
+                UserVO commentOwnerVO = modelMapper.map(parentComment.getUser(), UserVO.class);
+                CreatNotificationDto notification = new CreatNotificationDto(userVO,NotificationType.REPLIED_COMMENT , commentOwnerVO, parentComment.getId());
+                notificationService.createNotification(notification);
             } else {
                 throw new BadRequestException(ErrorMessage.CANNOT_REPLY_THE_REPLY);
             }
         }
+        CreatNotificationDto notification = new CreatNotificationDto(userVO,NotificationType.COMMENTED_NEWS , ecoNewsVO.getAuthor(), ecoNewsVO.getId());
+        notificationService.createNotification(notification);
+
         String accessToken = httpServletRequest.getHeader(AUTHORIZATION);
         CompletableFuture.runAsync(
             () -> ratingCalculation.ratingCalculation(RatingCalculationEnum.ADD_COMMENT, userVO, accessToken));
@@ -199,6 +208,8 @@ public class EcoNewsCommentServiceImpl implements EcoNewsCommentService {
             ecoNewsService.unlikeComment(userVO, ecoNewsCommentVO);
         } else {
             ecoNewsService.likeComment(userVO, ecoNewsCommentVO);
+            CreatNotificationDto notification = new CreatNotificationDto(userVO, NotificationType.LIKED_COMMENT,ecoNewsCommentVO.getUser(), ecoNewsCommentVO.getId());
+            notificationService.createNotification(notification);
         }
         ecoNewsCommentRepo.save(modelMapper.map(ecoNewsCommentVO, EcoNewsComment.class));
     }
