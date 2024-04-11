@@ -106,8 +106,8 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
-    public List<PlaceResponse> getFavoritePlaces(UserVO user) {
-        return placeRepo.findByFavoritesId(user.getId()).stream()
+    public List<PlaceResponse> getFavoritePlaces(Long userId) {
+        return placeRepo.findByFavoritesId(userId).stream()
                 .map(p -> modelMapper.map(p, PlaceResponse.class))
                 .toList();
     }

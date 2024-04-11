@@ -30,5 +30,5 @@ public interface PlaceService {
 
     PlaceUpdateDto getPlaceById(Long id);
 
-    List<PlaceResponse> getFavoritePlaces(UserVO user);
+    List<PlaceResponse> getFavoritePlaces(Long userId);
 }

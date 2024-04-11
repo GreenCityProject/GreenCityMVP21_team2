@@ -101,6 +101,6 @@ public class PlaceController {
     })
     @GetMapping("/favorite")
     public ResponseEntity<List<PlaceResponse>> getAllFavoritePlaces(@Parameter(hidden = true) @CurrentUser UserVO user){
-        return ResponseEntity.status(HttpStatus.OK).body(placeService.getFavoritePlaces(user));
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.getFavoritePlaces(user.getId()));
     }
 }
