@@ -28,6 +28,19 @@ public final class SwaggerExampleModel {
             + "     {\"content\": \"string\",\n"
             + "     \"languageCode\": \"string\"}\n";
 
+    private static final String ADD_ECO_NEWS_EXAMPLE =
+            "\"tags\":[\"string\"],"
+                    + "\"text\":\"string\","
+                    + "\"title\":\"string\","
+                    + "\"source\":\"string\"";
+
+    private static final String UPDATE_EXAMPLE =
+            "\"tags\":[\"string\"],\n"
+                + "\"content\":\"string\",\n"
+                + "\"title\":\"string\",\n"
+                + "\"source\":\"string\",\n"
+                + "\"text\":\"string\"";
+
     private static final String AFTER_EXAMPLE = "\t</pre>\n"
         + "</div>";
 
@@ -44,19 +57,20 @@ public final class SwaggerExampleModel {
         "Add Eco News Request\n"
             + IMAGE_DESCRIPTION
             + BEFORE_EXAMPLE
-            + "{\n"
-            + EXAMPLE
+            + "{"
+            + ADD_ECO_NEWS_EXAMPLE
             + "}\n"
             + AFTER_EXAMPLE;
+
     public static final String UPDATE_ECO_NEWS =
         "Update Eco News\n"
             + IMAGE_DESCRIPTION
             + BEFORE_EXAMPLE
-            + "{\n"
-            + "  \"id\": 0,\n"
-            + EXAMPLE
+            + "{\"id\":\"string\",\n"
+            + UPDATE_EXAMPLE
             + "}\n"
             + AFTER_EXAMPLE;
+
     public static final String ADD_EVENT = BEFORE_EXAMPLE
         + "{\n"
         + "\t\"title\":\"string\",\n"
@@ -75,6 +89,14 @@ public final class SwaggerExampleModel {
         + "\t],\n"
         + "\t\"tags\":[\"Social\"]\n"
         + "}" + AFTER_EXAMPLE;
+
+    public static final String FILTER_EVENT = BEFORE_EXAMPLE
+            + "{\n"
+            + "\t\"eventTime\":\"Upcoming\",\n"
+            + "\t\"location\":\"Online\",\n"
+            + "\t\"type\": \"Environmental\",\n"
+            + "\t\"status\":\"Open\"\n"
+            + "}" + AFTER_EXAMPLE;
 
     public static final String UPDATE_EVENT = BEFORE_EXAMPLE
         + "{\n"
