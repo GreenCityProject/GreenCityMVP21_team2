@@ -6,10 +6,15 @@ import greencity.dto.place.AdminPlaceDto;
 import greencity.dto.place.FilterPlaceDto;
 import greencity.dto.place.PlaceResponse;
 import greencity.dto.user.UserVO;
+import greencity.enums.EmailNotification;
 import org.springframework.data.domain.Pageable;
+
+
+import java.util.List;
 
 import greencity.dto.place.PlaceInfoDto;
 import greencity.dto.place.PlaceUpdateDto;
+
 
 /**
  * Provides the interface to manage {@code Place} entity.
@@ -33,4 +38,52 @@ public interface PlaceService {
      */
 
     PlaceUpdateDto getPlaceById(Long id);
+
+
+    /**
+     * Method for getting all places by filter.
+     *
+     * @return {@link PageableDto} of {@link PlaceInfoDto} instance.
+     */
+    PageableDto<PlaceInfoDto> filterPlaceBySearchPredicate(Pageable pageable, FilterPlaceDto filterDto);
+
+    /**
+     * Method subscribe for email notification about place updates
+     *
+     * @param placeSubscribeDto of the {@link PlaceSubscribeDto} contain sending frequency.
+     * @param userVO of the {@link UserVO}
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    PlaceSubscribeResponseDto subscribeEmailNotification(PlaceSubscribeDto placeSubscribeDto, UserVO userVO);
+
+    /**
+     * Method unsubscribe for email notification about place updates
+     *
+     * @param userVO of the {@link UserVO}
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    PlaceSubscribeResponseDto unsubscribeEmailNotification(UserVO userVO);
+
+    /**
+     * Method update email notification sending frequency
+     *
+     * @param userVO of the {@link UserVO}
+     * @param emailNotification of the {@link EmailNotification}
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    PlaceSubscribeResponseDto updateEmailNotificationFrequency(UserVO userVO, EmailNotification emailNotification);
+
+    /**
+     * Method return list of places updates subscribers.
+     *
+     * @return list of {@link PlaceSubscribeResponseDto} instance.
+     */
+    List<PlaceSubscribeResponseDto> getAllPlaceUpdatesSubscribers();
+
+    /**
+     * Method return list of places updates subscribers by frequency.
+     *
+     * @return list of {@link PlaceSubscribeResponseDto} instance.
+     */
+    List<PlaceSubscribeResponseDto> getAllPlaceUpdatesSubscribersByFrequency(EmailNotification emailNotification);
 }

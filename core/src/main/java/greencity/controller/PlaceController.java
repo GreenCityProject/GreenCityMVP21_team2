@@ -10,6 +10,7 @@ import greencity.dto.place.AdminPlaceDto;
 import greencity.dto.place.FilterPlaceDto;
 import greencity.dto.place.PlaceResponse;
 import greencity.dto.user.UserVO;
+import greencity.enums.EmailNotification;
 import greencity.service.PlaceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,6 +31,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/place")
@@ -106,5 +109,114 @@ public class PlaceController {
     @GetMapping("/about/{id}")
     public ResponseEntity<PlaceUpdateDto> getPlaceById(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.OK).body(placeService.getPlaceById(id));
+    }
+
+    /**
+     * Method for getting all places by filter.
+     *
+     * @return {@link PageableDto} of {@link PlaceInfoDto} instance.
+     */
+    @Operation(summary = "Return a list places filtered by values contained in the incoming FilterPlaceDto object.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "303", description = HttpStatuses.SEE_OTHER),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @ApiPageable
+    @PostMapping("/filter/predicate")
+    public ResponseEntity<PageableDto<PlaceInfoDto>> filterPlaceBySearchPredicate(
+            @Parameter(hidden = true) Pageable page,
+            @RequestBody FilterPlaceDto filterDto){
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.filterPlaceBySearchPredicate(page, filterDto));
+    }
+
+    /**
+     * Method for subscribing email notification about place updates.
+     *
+     * @param placeSubscribeDto of the {@link PlaceSubscribeResponseDto} with EmailNotification.
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+    })
+    @PostMapping("/emailNotification/subscribe")
+    public ResponseEntity<PlaceSubscribeResponseDto> subscribePlaceEmailNotification(
+            @RequestBody PlaceSubscribeDto placeSubscribeDto,
+            @Parameter(hidden = true) @CurrentUser UserVO userVO){
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.subscribeEmailNotification(placeSubscribeDto, userVO));
+    }
+
+    /**
+     * Method for unsubscribing email notification about place updates.
+     *
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN)
+    })
+    @PostMapping("/emailNotification/unsubscribe")
+    public ResponseEntity<PlaceSubscribeResponseDto> unsubscribePlaceEmailNotification(@Parameter(hidden = true) @CurrentUser UserVO userVO){
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.unsubscribeEmailNotification(userVO));
+    }
+
+    /**
+     * Method update email notification sending frequency.
+     *
+     * @param placeSubscribeDto of the {@link PlaceSubscribeResponseDto} with EmailNotification.
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+    })
+    @PutMapping("/emailNotification/updateFrequency")
+    public ResponseEntity<PlaceSubscribeResponseDto> updateEmailNotificationFrequency(
+            @RequestBody PlaceSubscribeDto placeSubscribeDto,
+            @Parameter(hidden = true) @CurrentUser UserVO userVO
+    ){
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(placeService.updateEmailNotificationFrequency(userVO, placeSubscribeDto.getEmailNotification()));
+    }
+
+    /**
+     * Method return list of place updates subscribers
+     *
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @GetMapping("/emailNotification/getAllSubscribers")
+    public ResponseEntity<List<PlaceSubscribeResponseDto>> getAllPlaceUpdateSubscribers(){
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.getAllPlaceUpdatesSubscribers());
+    }
+
+    /**
+     * Method return list of place updates subscribers by frequency.
+     *
+     * @param frequency of the {@link EmailNotification}.
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @GetMapping("/emailNotification/getAllSubscribers/{frequency}")
+    public ResponseEntity<List<PlaceSubscribeResponseDto>> getAllPlaceUpdateSubscribersByFrequency(
+            @PathVariable EmailNotification frequency){
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.getAllPlaceUpdatesSubscribersByFrequency(frequency));
     }
 }

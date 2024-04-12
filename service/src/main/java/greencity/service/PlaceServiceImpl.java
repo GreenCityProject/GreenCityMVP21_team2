@@ -7,11 +7,14 @@ import greencity.dto.filter.FilterDistanceDto;
 import greencity.dto.place.*;
 import greencity.dto.user.UserVO;
 import greencity.entity.*;
+import greencity.enums.EmailNotification;
 import greencity.enums.PlaceStatus;
+import greencity.exception.exceptions.BadRequestException;
 import greencity.exception.exceptions.NotFoundException;
 import greencity.filters.*;
 import greencity.repository.CategoryRepo;
 import greencity.repository.PlaceRepo;
+import greencity.repository.PlaceUpdatesSubscribersRepo;
 import greencity.dto.place.PlaceInfoDto;
 import greencity.dto.place.PlaceUpdateDto;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +46,7 @@ public class PlaceServiceImpl implements PlaceService {
 
     private final PlaceRepo placeRepo;
     private final CategoryRepo categoryRepo;
+    private final PlaceUpdatesSubscribersRepo placeUpdatesSubscribersRepo;
     private final GeocodingService geocodingService;
     private final ModelMapper modelMapper;
 
@@ -182,5 +188,64 @@ public class PlaceServiceImpl implements PlaceService {
 
     public PlaceUpdateDto getPlaceById(Long id) {
         return modelMapper.map(placeRepo.findById(id), PlaceUpdateDto.class);
+    }
+
+    @Override
+    public PlaceSubscribeResponseDto subscribeEmailNotification(PlaceSubscribeDto placeSubscribeDto, UserVO userVO) {
+        Optional<PlaceUpdatesSubscribers> optionalPlaceUpdatesSubscribers = placeUpdatesSubscribersRepo.findByUserId(userVO.getId());
+        if(optionalPlaceUpdatesSubscribers.isPresent()) throw new BadRequestException("User is already subscribed place updates");
+        placeUpdatesSubscribersRepo.save(
+                new PlaceUpdatesSubscribers(null, modelMapper.map(userVO,User.class), placeSubscribeDto.getEmailNotification()));
+        return new PlaceSubscribeResponseDto(placeSubscribeDto.getEmailNotification(), userVO.getId());
+    }
+
+
+    @Override
+    @Transactional
+    public PlaceSubscribeResponseDto unsubscribeEmailNotification(UserVO userVO) {
+        Optional<PlaceUpdatesSubscribers> optionalPlaceUpdatesSubscribers = placeUpdatesSubscribersRepo.findByUserId(userVO.getId());
+        if (optionalPlaceUpdatesSubscribers.isEmpty()) throw new BadRequestException("User isn't subscribed place updates");
+        placeUpdatesSubscribersRepo.deleteByUserId(userVO.getId());
+        return new PlaceSubscribeResponseDto(EmailNotification.DISABLED, userVO.getId());
+    }
+
+    @Override
+    public PlaceSubscribeResponseDto updateEmailNotificationFrequency(UserVO userVO, EmailNotification  emailNotification){
+        Optional<PlaceUpdatesSubscribers> optionalPlaceUpdatesSubscribers = placeUpdatesSubscribersRepo.findByUserId(userVO.getId());
+        if (optionalPlaceUpdatesSubscribers.isEmpty()) throw new BadRequestException("User isn't subscribed place updates");
+        PlaceUpdatesSubscribers placeUpdatesSubscribers = optionalPlaceUpdatesSubscribers.get();
+        if (placeUpdatesSubscribers.getEmailNotification() == emailNotification)
+            throw new BadRequestException("Nothing to update. Current frequency: " + emailNotification.toString());
+        placeUpdatesSubscribersRepo.updateEmailNotificationByUserId(userVO.getId(), emailNotification);
+        return new PlaceSubscribeResponseDto(emailNotification, userVO.getId());
+    }
+
+    @Override
+    public List<PlaceSubscribeResponseDto> getAllPlaceUpdatesSubscribers() {
+        List<PlaceUpdatesSubscribers> subscribers = placeUpdatesSubscribersRepo.findAll();
+        if (subscribers.isEmpty()) throw new BadRequestException("Empty raw");
+        List<PlaceSubscribeResponseDto> subscribersDto = new ArrayList<>();
+        for (PlaceUpdatesSubscribers subscriber : subscribers) {
+            subscribersDto.add(PlaceSubscribeResponseDto.builder()
+                    .emailNotification(subscriber.getEmailNotification())
+                    .userId(subscriber.getUser().getId())
+                    .build());
+        }
+        return subscribersDto;
+    }
+
+    @Override
+    public List<PlaceSubscribeResponseDto> getAllPlaceUpdatesSubscribersByFrequency(EmailNotification emailNotification) {
+        List<PlaceUpdatesSubscribers> subscribers = placeUpdatesSubscribersRepo.findAllByEmailNotification(emailNotification);
+        if (subscribers.isEmpty()) throw new BadRequestException("Empty raw");
+        List<PlaceSubscribeResponseDto> subscribersDto = new ArrayList<>();
+
+        for (PlaceUpdatesSubscribers subscriber : subscribers) {
+            subscribersDto.add(PlaceSubscribeResponseDto.builder()
+                    .emailNotification(subscriber.getEmailNotification())
+                    .userId(subscriber.getUser().getId())
+                    .build());
+        }
+        return subscribersDto;
     }
 }
