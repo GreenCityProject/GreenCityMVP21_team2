@@ -18,6 +18,7 @@ public final class AppConstant {
     public static final Integer MAX_PASSED_DAYS_OF_ABILITY_TO_ENROLL = 8;
     public static final String DEFAULT_HABIT_IMAGE =
         "https://csb10032000a548f571.blob.core.windows.net/allfiles/8f09887c-2fbf-4ee1-95fc-6763a1873b93EventDefaultImage.png";
+    public static final String VALIDATION_EMAIL = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
     public static final long NOTIFIC_ACTIVE_DAYS_TIME = 7;
     public static final long READ_NOTIFIC_ACTIVE_DAYS_TIME = 1;
 
@@ -27,8 +28,8 @@ public final class AppConstant {
     public static final String ENGLISH_GOOGLE_LANG_CODE = "en";
     public static final String UKRAINIAN_GOOGLE_LANG_CODE = "uk";
 
-
-
+    public static final String TAGGING_REGEX = "[#@]\\S+";
+  
     private AppConstant() {
     }
 }

@@ -182,5 +182,12 @@
     <include file="db/changelog/logs/ch-add-table-places.xml"/>
     <include file="db/changelog/logs/ch-add-column-estimate-to-comments-table.xml"/>
     <include file="db/changelog/logs/ch-add-table-place-updates-subscribers-Lukovskyi.xml"/>
+    <include file="db/changelog/logs/ch-add-table-news-subscribers-lukovskyi.xml"/>
+    <include file="db/changelog/logs/ch-add-column-friends-Baider.xml"/>
+    <include file="db/changelog/logs/ch-drop-row-ru-in-languages-table-Baider.xml"/>
+    <include file="db/changelog/logs/ch-add-table-events-Chekhovska.xml"/>
+    <include file="db/changelog/logs/ch-add-table-event-comment-Chekhovska.xml"/>
+    <include file="db/changelog/logs/ch-add-table-notification.xml"/>
+    <include file="db/changelog/logs/ch-add-new-column-Baider.xml"/>
 </databaseChangeLog>
 

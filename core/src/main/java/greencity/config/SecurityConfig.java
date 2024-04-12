@@ -245,6 +245,7 @@ public class SecurityConfig {
                                 USER_SHOPPING_LIST,
                                 "/user/{userId}/habit",
                                 "/habit/custom",
+                                "/friends/{friendId}",
                                 "/custom/shopping-list-items/{userId}/{habitId}/custom-shopping-list-items")
                         .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
                         .requestMatchers(HttpMethod.PUT,
@@ -271,6 +272,7 @@ public class SecurityConfig {
                                 USER_SHOPPING_LIST + "/{shoppingListItemId}/status/{status}",
                                 USER_SHOPPING_LIST + "/{userShoppingListItemId}",
                                 "/user/profilePicture",
+                                "/friends/{friendId}/acceptFriend",
                                 "/user/deleteProfilePicture")
                         .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
                         .requestMatchers(HttpMethod.DELETE,
@@ -286,6 +288,8 @@ public class SecurityConfig {
                                 CUSTOM_SHOPPING_LIST_URL,
                                 "/favorite_place/{placeId}",
                                 "/social-networks",
+                                "/friends/{friendId}/declineFriend",
+                                "/friends/{friendId}",
                                 USER_CUSTOM_SHOPPING_LIST_ITEMS,
                                 USER_SHOPPING_LIST + "/user-shopping-list-items")
                         .hasAnyRole(USER, ADMIN, MODERATOR, UBS_EMPLOYEE)
@@ -294,6 +298,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/newsSubscriber",
                                 "/user/all",
+                                "/friends",
+                                "/friends/not-friends-yet",
+                                "/friends/user/{userId}",
+                                "/friends/friendRequests",
                                 "/user/roles")
                         .hasAnyRole(ADMIN, MODERATOR)
                         .requestMatchers(HttpMethod.POST,"/place/v2/save","/place/filter/predicate")

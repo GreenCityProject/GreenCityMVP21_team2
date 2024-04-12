@@ -1,21 +1,17 @@
 package greencity.dto.notification;
 
-import greencity.enums.NotificationStatus;
+import greencity.dto.user.UserVO;
 import greencity.enums.NotificationType;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
-@Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @Builder
-@EqualsAndHashCode
 public class NotificationDto {
-    private Long id;
-    private NotificationType type;
-    private NotificationStatus status;
-    private LocalDateTime createdAt;
-    private Long evaluatorId;
+    private UserVO evaluator;
+    private NotificationType notificationType;
+    private UserVO receiver;
     private Long relatedEntityId;
 }

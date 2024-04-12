@@ -13,7 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 
 @ExtendWith(SpringExtension.class)
-public class NotificationDtoMapperTest {
+public class NotificationVOMapperTest {
     private final NotificationDtoMapper notificationDtoMapper = new NotificationDtoMapper();
 
     @Test

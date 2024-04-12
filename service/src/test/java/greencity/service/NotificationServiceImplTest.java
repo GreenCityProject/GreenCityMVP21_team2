@@ -1,7 +1,7 @@
 package greencity.service;
 
-import greencity.dto.CreatNotificationDto;
 import greencity.dto.notification.NotificationDto;
+import greencity.dto.notification.NotificationVO;
 import greencity.dto.user.UserVO;
 import greencity.entity.Notification;
 import greencity.entity.User;
@@ -51,7 +51,7 @@ public class NotificationServiceImplTest {
 
         when(notificationRepo.findAllByReceiverId(receiverId,pageable))
                 .thenReturn(notificationPage);
-        when(modelMapper.map(notification, NotificationDto.class))
+        when(modelMapper.map(notification, NotificationVO.class))
                 .thenReturn(notificationDtos.get(0));
 
         var actual = notificationService.getAllNotifications(receiverId);
@@ -69,7 +69,7 @@ public class NotificationServiceImplTest {
         when(notificationRepo.findAllUnreadByReceiverId(receiverId,pageable))
                 .thenReturn(notificationPage);
 
-        when(modelMapper.map(notification, NotificationDto.class))
+        when(modelMapper.map(notification, NotificationVO.class))
                 .thenReturn(notificationDtos.get(0));
 
         var actual = notificationService.getLatestUnreadNotifications(receiverId);
@@ -127,7 +127,7 @@ public class NotificationServiceImplTest {
         var userVO = getUserVO();
 
         mockFindByIdWithUserReturnNotification(id,notification);
-        when(modelMapper.map(notification,NotificationDto.class)).thenReturn(notificationDto);
+        when(modelMapper.map(notification, NotificationVO.class)).thenReturn(notificationDto);
 
         assertEquals(notificationDto,notificationService.changeStatusToRead(id,userVO));
         assertEquals(READ, notification.getStatus());
@@ -174,7 +174,7 @@ public class NotificationServiceImplTest {
         var userVO = getUserVO();
 
         mockFindByIdWithUserReturnNotification(id,notification);
-        when(modelMapper.map(notification,NotificationDto.class)).thenReturn(notificationDto);
+        when(modelMapper.map(notification, NotificationVO.class)).thenReturn(notificationDto);
 
         assertEquals(notificationDto,notificationService.changeStatusToUnread(id,userVO));
         assertEquals(NotificationStatus.UNREAD, notification.getStatus());
@@ -223,8 +223,8 @@ public class NotificationServiceImplTest {
         verifyMapMethodCall(2);
     }
 
-    private CreatNotificationDto buildCreateNotificationDto(UserVO userVO) {
-        return CreatNotificationDto.builder()
+    private NotificationDto buildCreateNotificationDto(UserVO userVO) {
+        return NotificationDto.builder()
                 .notificationType(NotificationType.LIKED_EVENT)
                 .evaluator(userVO)
                 .receiver(userVO)
