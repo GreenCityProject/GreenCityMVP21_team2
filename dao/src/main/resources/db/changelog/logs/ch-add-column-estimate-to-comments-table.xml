@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Drop column estimate_id from comments table -->
+    <changeSet id="drop-column-estimate_id" author="Maryna Chekhovska">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="comments" columnName="estimate_id"/>
+        </preConditions>
+        <dropColumn tableName="comments" columnName="estimate_id"/>
+    </changeSet>
+
+    <!-- Add column estimate to comments table -->
+    <changeSet id="add-column-estimate" author="Maryna Chekhovska">
+        <addColumn tableName="comments">
+            <column name="estimate" type="TINYINT"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

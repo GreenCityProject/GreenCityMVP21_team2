@@ -158,6 +158,26 @@ public final class SwaggerExampleModel {
         + "\t\"isOpen\":true\n"
         + "}";
 
+
+    public static final String ADD_PLACE_DTO = BEFORE_EXAMPLE + """
+            {
+              "categoryName": "string",
+              "locationName": "string",
+              "placeName": "string",
+              "openingHoursList": [
+                {
+                  "breakTime": {
+                    "endTime": "00:00",
+                    "startTime": "00:00"
+                  },
+                  "closeTime": "00:00",
+                  "openTime": "00:00",
+                  "weekDay": "MONDAY"
+                }
+              ]
+            }
+            """ + AFTER_EXAMPLE;
+
     private SwaggerExampleModel() {
     }
 }

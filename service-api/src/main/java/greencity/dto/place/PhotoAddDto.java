@@ -1,8 +1,7 @@
-package greencity.dto.comment;
+package greencity.dto.place;
 
 import lombok.*;
 
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -10,6 +9,7 @@ import lombok.*;
 @ToString
 @Builder
 @EqualsAndHashCode
-public class CommentDto {
-    private String text;
+public class PhotoAddDto {
+
+    private String name;
 }

@@ -3,6 +3,7 @@ package greencity.repository;
 import greencity.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -27,5 +28,5 @@ public interface CategoryRepo extends JpaRepository<Category, Long> {
     @Query(nativeQuery = true, value = "select * from categories c "
         + "where lower(c.name) like lower(concat('%', :name, '%')) "
         + "OR lower(c.name_ua) like lower(concat('%', :name, '%'))")
-    Category findCategoryByName(String name);
+    Category findCategoryByName(@Param("name") String name);
 }
