@@ -4,7 +4,6 @@ import greencity.constant.AppConstant;
 import greencity.dto.user.UserVO;
 import greencity.entity.User;
 import greencity.repository.UserRepo;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -28,12 +27,6 @@ public class TaggedUsersServiceImpl implements TaggedUsersService {
         return getUsersByNames(names);
     }
 
-
-    @PostConstruct
-    public void print(){
-        var names = extractNamesFormText("Hello @Denys_ryhal me with @Вікторі'я and @Oleg\" so it was good.");
-        System.out.println(names);
-    }
 
     private static Matcher getMatcher(String text) {
         return Pattern.compile(AppConstant.TAGGING_REGEX).matcher(text);
