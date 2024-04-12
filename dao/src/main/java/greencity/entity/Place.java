@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.type.descriptor.jdbc.IntegerJdbcType;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +35,12 @@ public class Place {
 
     @ManyToOne
     private Category category;
+
+    @Column(name = "created_at", nullable = false)
+    private ZonedDateTime createdAt = ZonedDateTime.now();
+
+    @Column(name = "modified_at", nullable = false)
+    private ZonedDateTime modifiedAt = ZonedDateTime.now();
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private PlaceLocations location;

@@ -1,8 +1,12 @@
 package greencity.service;
 
+import greencity.dto.PageableDto;
 import greencity.dto.place.AddPlaceDto;
+import greencity.dto.place.AdminPlaceDto;
+import greencity.dto.place.FilterPlaceDto;
 import greencity.dto.place.PlaceResponse;
 import greencity.dto.user.UserVO;
+import org.springframework.data.domain.Pageable;
 
 import greencity.dto.place.PlaceInfoDto;
 import greencity.dto.place.PlaceUpdateDto;
@@ -12,6 +16,8 @@ import greencity.dto.place.PlaceUpdateDto;
  */
 public interface PlaceService {
     PlaceResponse createPlace(UserVO user, AddPlaceDto addPlace);
+
+    PageableDto<AdminPlaceDto> filterPlaces(FilterPlaceDto filterPlaceDto, Pageable pageable);
 
     /**
      * Method to getting {@link PlaceInfoDto} specified by id.

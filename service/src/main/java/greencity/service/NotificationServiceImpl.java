@@ -66,7 +66,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     private PageableAdvancedDto<NotificationDto> getPageableNotifications(Page<Notification> notifications) {
         var notificationDtos = mapToNotificationDtos(notifications.getContent());
-        return PageableAdvancedBuilder.getPageableAdvanced(notificationDtos, notifications);
+        return PageableAdvancedBuilder.getPageableAdvancedDto(notificationDtos, notifications);
     }
 
     private List<NotificationDto> mapToNotificationDtos(List<Notification> translations) {

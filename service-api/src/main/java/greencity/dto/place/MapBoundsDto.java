@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MapBoundsDto {
     double northEastLat;
-    double  northEastLng;
-    double  southWestLat;
-    double  southWestLng;
+    double northEastLng;
+    double southWestLat;
+    double southWestLng;
 }

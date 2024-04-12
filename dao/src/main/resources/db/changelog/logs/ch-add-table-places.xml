@@ -35,6 +35,20 @@
         </rollback>
     </changeSet>
 
+
+    <changeSet id="add-column-createdAt-to-places-1" author="Denys Ryhal">
+        <addColumn tableName="places">
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="places">
+            <column name="modified_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
     <!-- Table for places break time hours -->
     <changeSet id="create-table-break_time" author="Maryna Chekhovska">
         <createTable tableName="break_time">
@@ -71,7 +85,7 @@
     </changeSet>
 
     <!-- Table for place locations -->
-    <changeSet id="create-table-place-locations2" author="Maryna Chekhovska">
+    <changeSet id="create-table-place-locations3" author="Maryna Chekhovska">
         <createTable tableName="place_locations">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -91,7 +105,7 @@
                                  referencedColumnNames="id"/>
     </changeSet>
 
-    <changeSet id="add-address_ua-column-to-location" author="Denys Ryhal">
+    <changeSet id="add-address_ua-column-to-location3" author="Denys Ryhal">
         <addColumn tableName="place_locations">
             <column name="address_ua" type="varchar(255)">
                 <constraints nullable="false"/>
@@ -100,7 +114,7 @@
     </changeSet>
 
     <!-- Table for places favorites -->
-    <changeSet id="create-table-places-favorite" author="Maryna Chekhovska">
+    <changeSet id="create-table-places-favorite3" author="Maryna Chekhovska">
         <createTable tableName="places_favorite">
             <column name="place_id" type="BIGINT">
                 <constraints foreignKeyName="FK_places_favorite_id" references="places (id)"/>
@@ -115,7 +129,7 @@
     </changeSet>
 
     <!-- Table for places images -->
-    <changeSet id="create-table-places-images" author="Maryna Chekhovska">
+    <changeSet id="create-table-places-images3" author="Maryna Chekhovska">
         <createTable tableName="places_images">
             <column name="id" autoIncrement="true" type="BIGINT">
                 <constraints primaryKey="true"/>
