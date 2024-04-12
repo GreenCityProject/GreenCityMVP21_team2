@@ -5,10 +5,7 @@ import greencity.annotations.CurrentUser;
 import greencity.constant.HttpStatuses;
 import greencity.constant.SwaggerExampleModel;
 import greencity.dto.PageableDto;
-import greencity.dto.place.AddPlaceDto;
-import greencity.dto.place.AdminPlaceDto;
-import greencity.dto.place.FilterPlaceDto;
-import greencity.dto.place.PlaceResponse;
+import greencity.dto.place.*;
 import greencity.dto.user.UserVO;
 import greencity.enums.EmailNotification;
 import greencity.service.PlaceService;
@@ -18,19 +15,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 
-import greencity.dto.place.PlaceInfoDto;
-import greencity.dto.place.PlaceUpdateDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -109,27 +99,6 @@ public class PlaceController {
     @GetMapping("/about/{id}")
     public ResponseEntity<PlaceUpdateDto> getPlaceById(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.OK).body(placeService.getPlaceById(id));
-    }
-
-    /**
-     * Method for getting all places by filter.
-     *
-     * @return {@link PageableDto} of {@link PlaceInfoDto} instance.
-     */
-    @Operation(summary = "Return a list places filtered by values contained in the incoming FilterPlaceDto object.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
-            @ApiResponse(responseCode = "303", description = HttpStatuses.SEE_OTHER),
-            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
-            @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN),
-            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
-    })
-    @ApiPageable
-    @PostMapping("/filter/predicate")
-    public ResponseEntity<PageableDto<PlaceInfoDto>> filterPlaceBySearchPredicate(
-            @Parameter(hidden = true) Pageable page,
-            @RequestBody FilterPlaceDto filterDto){
-        return ResponseEntity.status(HttpStatus.OK).body(placeService.filterPlaceBySearchPredicate(page, filterDto));
     }
 
     /**
