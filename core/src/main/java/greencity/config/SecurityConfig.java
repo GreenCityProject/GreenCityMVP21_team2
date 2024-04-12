@@ -182,6 +182,8 @@ public class SecurityConfig {
                                 "/events/comments/likes/count/{commentId}",
                                 "/events/comments/replies/active/{parentCommentId}",
                                 "/events/comments/replies/active/count/{parentCommentId}",
+                                "/place/emailNotification/getAllSubscribers",
+                                "/place/emailNotification/getAllSubscribers/{frequency}",
                                 "/shopping-list-items",
                                 "/habit/assign/allForCurrentUser",
                                 "/habit/assign/active/{date}",
@@ -228,6 +230,8 @@ public class SecurityConfig {
                                 "/events/comments/{eventId}",
                                 "/events/comments/like",
                                 "/place/{placeId}/comments",
+                                "/place/emailNotification/subscribe",
+                                "/place/emailNotification/unsubscribe",
                                 CUSTOM_SHOPPING_LIST_ITEMS,
                                 "/files/image",
                                 "/files/convert",
@@ -249,6 +253,7 @@ public class SecurityConfig {
                                 "/events/update",
                                 "/ownSecurity",
                                 "/user/profile",
+                                "/place/emailNotification/updateFrequency",
                                 HABIT_ASSIGN_ID + "/update-habit-duration",
                                 "/habit/assign/{habitAssignId}/updateProgressNotificationHasDisplayed",
                                 HABIT_ASSIGN_ID + "/allUserAndCustomList")
@@ -291,7 +296,7 @@ public class SecurityConfig {
                                 "/user/all",
                                 "/user/roles")
                         .hasAnyRole(ADMIN, MODERATOR)
-                        .requestMatchers(HttpMethod.POST,"/place/v2/save")
+                        .requestMatchers(HttpMethod.POST,"/place/v2/save","/place/filter/predicate")
                         .hasAnyRole(ADMIN,USER,MODERATOR,UBS_EMPLOYEE)
                         .requestMatchers(HttpMethod.POST,
                                 "/place/filter/predicate")

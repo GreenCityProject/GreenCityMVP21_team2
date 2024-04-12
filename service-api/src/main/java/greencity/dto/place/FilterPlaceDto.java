@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -17,4 +19,5 @@ public class FilterPlaceDto {
     MapBoundsDto mapBoundsDto;
     String searchReg;
     PlaceStatus placeStatus;
+    LocalTime time;
 }

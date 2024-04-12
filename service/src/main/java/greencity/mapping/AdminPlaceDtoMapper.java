@@ -1,32 +1,30 @@
 package greencity.mapping;
 
 import greencity.dto.category.CategoryDto;
-import greencity.dto.place.AddPlaceLocation;
-import greencity.dto.place.BreakTimeDto;
-import greencity.dto.place.OpeningHoursDto;
-import greencity.dto.place.PlaceResponse;
-import greencity.entity.Category;
-import greencity.entity.OpeningHours;
-import greencity.entity.Place;
-import greencity.entity.PlaceLocations;
+import greencity.dto.place.*;
+import greencity.entity.*;
 import org.modelmapper.AbstractConverter;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.*;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Component
-public class PlaceResponseMapper extends AbstractConverter<Place, PlaceResponse> {
-
+public class AdminPlaceDtoMapper extends AbstractConverter<Place, AdminPlaceDto> {
     @Override
-    protected PlaceResponse convert(Place place) {
-        return PlaceResponse.builder()
-                .placeName(place.getName())
+    protected AdminPlaceDto convert(Place place) {
+        return AdminPlaceDto.builder()
+                .id(place.getId())
+                .status(place.getStatus())
+                .name(place.getName())
+                .modifiedDate(place.getModifiedAt())
                 .category(maToCategoryDto(place.getCategory()))
-                .locationAddressAndGeoDto(mapToAddPlaceLocation(place.getLocation()))
                 .openingHoursList(mapToOpeningHoursDto(place.getOpeningHours()))
+                .author(mapToPlaceAuthorDto(place.getAuthor()))
+                .location(mapToLocationDto(place.getLocation()))
                 .build();
     }
 
@@ -35,15 +33,6 @@ public class PlaceResponseMapper extends AbstractConverter<Place, PlaceResponse>
                 .name(category.getName())
                 .nameUa(category.getNameUa())
                 .parentCategoryId(isNull(category.getParentCategory()) ? null : category.getId())
-                .build();
-    }
-
-    private static AddPlaceLocation mapToAddPlaceLocation(PlaceLocations location) {
-        return AddPlaceLocation.builder()
-                .address(location.getAddressUa())
-                .addressEng(location.getAddress())
-                .lat(location.getLat())
-                .lng(location.getLng())
                 .build();
     }
 
@@ -66,6 +55,23 @@ public class PlaceResponseMapper extends AbstractConverter<Place, PlaceResponse>
         return BreakTimeDto.builder()
                 .startTime(h.getBreakTime().getStartTime())
                 .endTime(h.getBreakTime().getEndTime())
+                .build();
+    }
+
+    private PlaceAuthorDto mapToPlaceAuthorDto(User author) {
+        return PlaceAuthorDto.builder()
+                .id(author.getId())
+                .email(author.getEmail())
+                .name(author.getName())
+                .build();
+    }
+
+    private LocationDto mapToLocationDto(PlaceLocations location) {
+        return LocationDto.builder()
+                .id(location.getId())
+                .address(location.getAddress())
+                .lat(location.getLat())
+                .lng(location.getLng())
                 .build();
     }
 }

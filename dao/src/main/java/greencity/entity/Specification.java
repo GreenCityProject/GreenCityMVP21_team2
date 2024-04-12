@@ -20,5 +20,6 @@ public class Specification {
     private String name;
 
     @ManyToOne
+    @JoinColumn(name = "discount_value_id")
     private DiscountValue discountValue;
 }
