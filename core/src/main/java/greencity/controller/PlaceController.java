@@ -23,6 +23,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import java.util.List;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/place")
 @RequiredArgsConstructor
@@ -101,6 +103,21 @@ public class PlaceController {
     }
 
     /**
+     * Method to getting {@link List<PlaceResponse>} user's favorite places.
+     *
+     * @author Vasyl Shtoiko
+     */
+    @Operation(summary = "Get all user's favorite places.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED)
+    })
+    @GetMapping("/favorite")
+    public ResponseEntity<List<PlaceResponse>> getAllFavoritePlaces(@Parameter(hidden = true) @CurrentUser UserVO user){
+        return ResponseEntity.status(HttpStatus.OK).body(placeService.getFavoritePlaces(user.getId()));
+    }
+  
+    /**
      * The method which save new Place to User's favorite places list.
      *
      * @param id - place's id to add to favorites.
@@ -138,6 +155,7 @@ public class PlaceController {
                                                         @PathVariable Long id){
         placeService.removePlaceFromFavorite(user, id);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
       
      /**
      * Method for subscribing email notification about place updates.

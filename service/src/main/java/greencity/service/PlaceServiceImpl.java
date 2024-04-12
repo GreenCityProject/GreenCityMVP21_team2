@@ -198,6 +198,12 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
+    public List<PlaceResponse> getFavoritePlaces(Long userId) {
+        return placeRepo.findByFavoritesId(userId).stream()
+                .map(p -> modelMapper.map(p, PlaceResponse.class))
+                .toList();
+    }
+  
     public void addPlaceToFavorite(UserVO user, Long placeId){
         var place = placeRepo.findById(placeId).orElseThrow(() -> new NotFoundException(STR."Place with id=\{placeId} not found"));
         place.getFavorites().add(modelMapper.map(user,User.class));
