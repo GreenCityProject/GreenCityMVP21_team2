@@ -55,7 +55,6 @@ public class PlaceServiceImpl implements PlaceService {
     private final GeocodingService geocodingService;
     private final ModelMapper modelMapper;
     private final UserRepo userRepo;
-    private final String defaultImage = "default";
 
     @Override
     public PlaceResponse createPlace(UserVO user, AddPlaceDto addPlace) {
@@ -211,11 +210,12 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
-    public void removePlaceFromFavorite(UserVO userVO, Long placeId){
+    public void removePlaceFromFavorite(UserVO userVO, Long placeId) {
         var place = placeRepo.findById(placeId).orElseThrow(() -> new NotFoundException(STR."Place with id=\{placeId} not found"));
         User user = userRepo.findById(userVO.getId()).orElseThrow(() -> new NotFoundException(ErrorMessage.USER_NOT_FOUND_BY_ID + userVO.getId()));
         place.getFavorites().remove(user);
         placeRepo.save(place);
+    }
       
     public PlaceSubscribeResponseDto subscribeEmailNotification(PlaceSubscribeDto placeSubscribeDto, UserVO userVO) {
         Optional<PlaceUpdatesSubscribers> optionalPlaceUpdatesSubscribers = placeUpdatesSubscribersRepo.findByUserId(userVO.getId());
