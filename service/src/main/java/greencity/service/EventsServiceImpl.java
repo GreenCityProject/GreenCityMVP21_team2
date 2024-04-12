@@ -324,8 +324,8 @@ public class EventsServiceImpl implements EventsService {
 
     private void setImagesInEventDto (EventDto eventDto, List<MultipartFile> images){
         if (images != null) {
-            eventDto.setTitleImage(fileService.upload(images.getFirst()));
-            images.removeFirst();
+            eventDto.setTitleImage(fileService.upload(images.get(0)));
+            images.remove(0);
             eventDto.setAdditionalImages(images.stream()
                     .map(fileService::upload)
                     .collect(Collectors.toList()));

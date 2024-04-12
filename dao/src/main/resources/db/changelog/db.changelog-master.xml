@@ -181,5 +181,6 @@
     <include file="db/changelog/logs/ch-add-table-notification.xml"/>
     <include file="db/changelog/logs/ch-add-table-places.xml"/>
     <include file="db/changelog/logs/ch-add-column-estimate-to-comments-table.xml"/>
+    <include file="db/changelog/logs/ch-add-table-place-updates-subscribers-Lukovskyi.xml"/>
 </databaseChangeLog>
 

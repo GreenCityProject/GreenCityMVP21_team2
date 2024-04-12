@@ -1,17 +1,22 @@
 package greencity.service;
 
-import greencity.dto.place.AddPlaceDto;
-import greencity.dto.place.PlaceResponse;
+import greencity.dto.PageableDto;
+import greencity.dto.place.*;
 import greencity.dto.user.UserVO;
+import greencity.enums.EmailNotification;
+import org.springframework.data.domain.Pageable;
 
-import greencity.dto.place.PlaceInfoDto;
-import greencity.dto.place.PlaceUpdateDto;
+
+import java.util.List;
+
 
 /**
  * Provides the interface to manage {@code Place} entity.
  */
 public interface PlaceService {
     PlaceResponse createPlace(UserVO user, AddPlaceDto addPlace);
+
+    PageableDto<AdminPlaceDto> filterPlaces(FilterPlaceDto filterPlaceDto, Pageable pageable);
 
     /**
      * Method to getting {@link PlaceInfoDto} specified by id.
@@ -25,10 +30,61 @@ public interface PlaceService {
      *
      * @param id of the {@link PlaceUpdateDto} entity to retrieve.
      */
-
     PlaceUpdateDto getPlaceById(Long id);
-
+  
+    /**
+     * Method adds user to favorites
+     *
+     * @param userVO of the {@link UserVO}
+     * @param id of the {@link Place} entity to add.
+     */
     void addPlaceToFavorite(UserVO user, Long placeId);
 
+      /**
+     * Method remove user from favorites
+     *
+     * @param userVO of the {@link UserVO}
+     * @param id of the {@link Place} entity to add.
+     */
     void removePlaceFromFavorite(UserVO user, Long placeId);
+  
+    /**
+     * Method subscribe for email notification about place updates
+     *
+     * @param placeSubscribeDto of the {@link PlaceSubscribeDto} contain sending frequency.
+     * @param userVO of the {@link UserVO}
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    PlaceSubscribeResponseDto subscribeEmailNotification(PlaceSubscribeDto placeSubscribeDto, UserVO userVO);
+
+    /**
+     * Method unsubscribe for email notification about place updates
+     *
+     * @param userVO of the {@link UserVO}
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    PlaceSubscribeResponseDto unsubscribeEmailNotification(UserVO userVO);
+
+    /**
+     * Method update email notification sending frequency
+     *
+     * @param userVO of the {@link UserVO}
+     * @param emailNotification of the {@link EmailNotification}
+     * @return {@link PlaceSubscribeResponseDto} of {@link PlaceSubscribeResponseDto} instance.
+     */
+    PlaceSubscribeResponseDto updateEmailNotificationFrequency(UserVO userVO, EmailNotification emailNotification);
+
+    /**
+     * Method return list of places updates subscribers.
+     *
+     * @return list of {@link PlaceSubscribeResponseDto} instance.
+     */
+    List<PlaceSubscribeResponseDto> getAllPlaceUpdatesSubscribers();
+
+    /**
+     * Method return list of places updates subscribers by frequency.
+     *
+     * @return list of {@link PlaceSubscribeResponseDto} instance.
+     */
+    List<PlaceSubscribeResponseDto> getAllPlaceUpdatesSubscribersByFrequency(EmailNotification emailNotification);
 }
