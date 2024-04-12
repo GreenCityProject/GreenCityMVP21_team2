@@ -1,5 +1,7 @@
 package greencity.config;
 
+import greencity.exception.handler.CustomAccessDeniedHandler;
+import greencity.exception.handler.JwtAuthenticationEntryPoint;
 import greencity.security.filters.AccessTokenAuthenticationFilter;
 import greencity.security.jwt.JwtTool;
 import greencity.security.providers.JwtAuthenticationProvider;
@@ -49,16 +51,20 @@ public class SecurityConfig {
     private final JwtTool jwtTool;
     private final UserService userService;
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final JwtAuthenticationEntryPoint unauthorizedHandler;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     /**
      * Constructor.
      */
     @Autowired
     public SecurityConfig(JwtTool jwtTool, UserService userService,
-                          AuthenticationConfiguration authenticationConfiguration) {
+                          AuthenticationConfiguration authenticationConfiguration, JwtAuthenticationEntryPoint unauthorizedHandler, CustomAccessDeniedHandler customAccessDeniedHandler) {
         this.jwtTool = jwtTool;
         this.userService = userService;
         this.authenticationConfiguration = authenticationConfiguration;
+        this.unauthorizedHandler = unauthorizedHandler;
+        this.customAccessDeniedHandler = customAccessDeniedHandler;
     }
 
     /**
@@ -95,10 +101,9 @@ public class SecurityConfig {
                 .addFilterBefore(
                         new AccessTokenAuthenticationFilter(jwtTool, authenticationManager(), userService),
                         UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exception -> exception.authenticationEntryPoint((req, resp, exc) -> resp
-                                .sendError(SC_UNAUTHORIZED, "Authorize first."))
-                        .accessDeniedHandler((req, resp, exc) ->
-                                resp.sendError(SC_FORBIDDEN, "You don't have authorities.")))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(unauthorizedHandler)
+                        .accessDeniedHandler(customAccessDeniedHandler))
                 .authorizeHttpRequests(req -> req
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/", "/management/", "/management/login").permitAll()
@@ -230,6 +235,7 @@ public class SecurityConfig {
                                 "/place/{placeId}/comments",
                                 CUSTOM_SHOPPING_LIST_ITEMS,
                                 "/files/image",
+                                "/place/v2/cafe/save",
                                 "/files/convert",
                                 HABIT_ASSIGN_ID,
                                 HABIT_ASSIGN_ID + "/custom",

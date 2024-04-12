@@ -86,4 +86,17 @@ public class PlaceController {
     public ResponseEntity<PlaceUpdateDto> getPlaceById(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.OK).body(placeService.getPlaceById(id));
     }
+
+
+    @Operation(summary = "propose Cafe Place")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+    })
+    @PostMapping("/v2/cafe/save")
+    public PlaceResponse proposeCafePlace(@Parameter(hidden = true) @CurrentUser UserVO user,
+                                   @RequestBody @Validated AddPlaceDto addPlace){
+        return placeService.proposedCafePlace(user,addPlace);
+    }
 }

@@ -27,4 +27,6 @@ public interface PlaceService {
      */
 
     PlaceUpdateDto getPlaceById(Long id);
+
+    PlaceResponse proposedCafePlace(UserVO user, AddPlaceDto addPlace);
 }

@@ -104,4 +104,25 @@ public class PlaceServiceImpl implements PlaceService {
     public PlaceUpdateDto getPlaceById(Long id){
         return modelMapper.map(placeRepo.findById(id), PlaceUpdateDto.class);
     }
+
+    private Place proposedCafePlace(String placeName) {
+        return new Place(placeName, defaultImage, PlaceStatus.PROPOSED);
+    }
+    @Override
+    public PlaceResponse proposedCafePlace(UserVO user, AddPlaceDto addPlace) {
+        var category = getCategory(addPlace.getCategoryName());
+        if (category.getParentCategory() == null) {
+            category.setParentCategory(getCategory("cafe"));
+        }
+        var placeLocation = createLocation(addPlace.getLocationName());
+        var openingHoursList = mapListOfHoursDtoToHours(addPlace.getOpeningHoursList());
+
+        var place = proposedCafePlace(addPlace.getPlaceName());
+        setCategoryToPlace(place,category);
+        setLocationToPlace(place,placeLocation);
+        setOpeningHoursToPlace(place,openingHoursList);
+        setAuthorToPlace(place,user);
+
+        return savePlace(place);
+    }
 }
