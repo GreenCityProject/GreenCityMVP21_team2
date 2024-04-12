@@ -1,18 +1,28 @@
 package greencity.service;
 
 import greencity.dto.PageableDto;
-import greencity.dto.place.*;
+import greencity.dto.place.AddPlaceDto;
+import greencity.dto.place.AdminPlaceDto;
+import greencity.dto.place.FilterPlaceDto;
+import greencity.dto.place.PlaceResponse;
 import greencity.dto.user.UserVO;
 import greencity.enums.EmailNotification;
 import org.springframework.data.domain.Pageable;
 
+
 import java.util.List;
+
+import greencity.dto.place.PlaceInfoDto;
+import greencity.dto.place.PlaceUpdateDto;
+
 
 /**
  * Provides the interface to manage {@code Place} entity.
  */
 public interface PlaceService {
     PlaceResponse createPlace(UserVO user, AddPlaceDto addPlace);
+
+    PageableDto<AdminPlaceDto> filterPlaces(FilterPlaceDto filterPlaceDto, Pageable pageable);
 
     /**
      * Method to getting {@link PlaceInfoDto} specified by id.
@@ -28,6 +38,7 @@ public interface PlaceService {
      */
 
     PlaceUpdateDto getPlaceById(Long id);
+
 
     /**
      * Method for getting all places by filter.

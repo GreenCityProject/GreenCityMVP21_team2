@@ -1,7 +1,9 @@
 package greencity.service;
 
+import greencity.builder.PageableAdvancedBuilder;
 import greencity.constant.ErrorMessage;
 import greencity.dto.PageableDto;
+import greencity.dto.filter.FilterDistanceDto;
 import greencity.dto.place.*;
 import greencity.dto.user.UserVO;
 import greencity.entity.*;
@@ -9,37 +11,44 @@ import greencity.enums.EmailNotification;
 import greencity.enums.PlaceStatus;
 import greencity.exception.exceptions.BadRequestException;
 import greencity.exception.exceptions.NotFoundException;
-import greencity.filters.PlaceSpecification;
-import greencity.filters.SearchCriteria;
+import greencity.filters.*;
 import greencity.repository.CategoryRepo;
 import greencity.repository.PlaceRepo;
 import greencity.repository.PlaceUpdatesSubscribersRepo;
+import greencity.dto.place.PlaceInfoDto;
+import greencity.dto.place.PlaceUpdateDto;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static greencity.constant.AppConstant.*;
+import static greencity.filters.GeneralPlaceSpecification.*;
+import static java.lang.Math.*;
+import static java.time.ZonedDateTime.now;
+import static java.util.Arrays.*;
+import static java.util.Objects.*;
 import static java.util.Optional.*;
 
 @Service
 @RequiredArgsConstructor
 public class PlaceServiceImpl implements PlaceService {
+    private static final double EARTH_RADIUS = 6371.0;
+    private static final String defaultImage = "default";
+
     private final PlaceRepo placeRepo;
     private final CategoryRepo categoryRepo;
     private final PlaceUpdatesSubscribersRepo placeUpdatesSubscribersRepo;
     private final GeocodingService geocodingService;
     private final ModelMapper modelMapper;
-
-    private final String defaultImage = "default";
 
     @Override
     public PlaceResponse createPlace(UserVO user, AddPlaceDto addPlace) {
@@ -80,7 +89,13 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     private Place createPlace(String placeName) {
-        return new Place(placeName, defaultImage, PlaceStatus.APPROVED);
+        return Place.builder()
+                .name(placeName)
+                .createdAt(now())
+                .modifiedAt(now())
+                .titleImage(defaultImage)
+                .status(PlaceStatus.APPROVED)
+                .build();
     }
 
     private void setCategoryToPlace(Place place, Category category) {
@@ -109,60 +124,70 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
-    public PlaceUpdateDto getPlaceById(Long id){
+    public PageableDto<AdminPlaceDto> filterPlaces(FilterPlaceDto filterPlaceDto, Pageable pageable) {
+        var optionalSpecification = createPlaceSpecification(filterPlaceDto);
+        var placePage = findPlaces(optionalSpecification, pageable);
+        var places = findPlacesInRadius(placePage.getContent(), filterPlaceDto);
+        var adminPlaceDtoList = mapToAdminPlaceDtoList(places);
+
+        return PageableAdvancedBuilder.getPageableDto(adminPlaceDtoList, placePage);
+    }
+
+    private List<AdminPlaceDto> mapToAdminPlaceDtoList(List<Place> places) {
+        return places.stream()
+                .map(p -> modelMapper.map(p, AdminPlaceDto.class))
+                .toList();
+    }
+
+    private Optional<Specification<Place>> createPlaceSpecification(FilterPlaceDto filter) {
+        if (isNull(filter))
+            return empty();
+
+        var categorySpecific = new PlaceCategorySpecification(filter.getCategories());
+        var hoursSpecific = new OpeningHoursPlaceSpecification(filter.getTime());
+        var discountSpecific = new PlaceDiscountSpecification(filter.getFilterDiscountDto());
+        var locationSpecific = new PlaceLocationSpecification(filter.getMapBoundsDto());
+        var regexSpecific = new PlaceQueryStatusSpecification(filter.getSearchReg(),filter.getPlaceStatus());
+
+        var specifications = asList(categorySpecific,hoursSpecific,discountSpecific,locationSpecific,regexSpecific);
+        return of(andAll(specifications));
+    }
+
+    private Page<Place> findPlaces(Optional<Specification<Place>> specification, Pageable pageable) {
+        return specification.map(s -> placeRepo.findAll(s,pageable))
+                .orElseGet(()-> placeRepo.findAll(pageable));
+    }
+
+    private List<Place> findPlacesInRadius(List<Place> places, FilterPlaceDto filter) {
+        return isNull(filter) || isNull(filter.getFilterDistanceDto()) ?
+            places : filterByDistanceToUser(places,filter.getFilterDistanceDto());
+    }
+
+    private List<Place> filterByDistanceToUser(List<Place> places, FilterDistanceDto filterDistance) {
+        return places.stream()
+                .filter(place -> isPlaceInRadius(filterDistance, place))
+                .toList();
+    }
+
+    private boolean isPlaceInRadius(FilterDistanceDto filterDistance, Place place) {
+        return calculateDistance(place.getLocation(), filterDistance) < filterDistance.getDistance();
+    }
+
+    private double calculateDistance(PlaceLocations location, FilterDistanceDto filterDistance) {
+        var placeLatRad = toRadians(location.getLat());
+        var placeLngRad = toRadians(location.getLng());
+        var userLatRad = toRadians(filterDistance.getLat());
+        var userLngRad = toRadians(filterDistance.getLng());
+
+        var deltaLat = userLatRad - placeLatRad;
+        var deltaLng = userLngRad - placeLngRad;
+
+        var a = pow(sin(deltaLat / 2), 2) + cos(placeLatRad) * cos(userLatRad) * pow(sin(deltaLng / 2), 2);
+        return EARTH_RADIUS * 2 * atan2(sqrt(a), sqrt(1 - a)); 
+    }
+
+    public PlaceUpdateDto getPlaceById(Long id) {
         return modelMapper.map(placeRepo.findById(id), PlaceUpdateDto.class);
-    }
-
-    @Override
-    public PageableDto<PlaceInfoDto> filterPlaceBySearchPredicate(Pageable pageable, FilterPlaceDto filterDto){
-        Page<Place> placePage = placeRepo.findAll(getSpecification(filterDto), pageable);
-        return buildPageableDtoByPlaceInfoDto(placePage);
-    }
-
-    private PageableDto<PlaceInfoDto> buildPageableDtoByPlaceInfoDto(Page<Place> placePage){
-        List<PlaceInfoDto> placeInfoDtoList = placePage.stream()
-                .map(place -> modelMapper.map(place, PlaceInfoDto.class))
-                .collect(Collectors.toList());
-        return new PageableDto<>(
-                placeInfoDtoList,
-                placePage.getTotalElements(),
-                placePage.getPageable().getPageNumber(),
-                placePage.getTotalPages());
-    }
-
-    public PlaceSpecification getSpecification(FilterPlaceDto filterDto) {
-        List<SearchCriteria> searchCriteria = buildSearchCriteria(filterDto);
-        return new PlaceSpecification(searchCriteria);
-    }
-
-    public List<SearchCriteria> buildSearchCriteria(FilterPlaceDto filterDto) {
-        List<SearchCriteria> criteriaList = new ArrayList<>();
-        if (filterDto.getFilterDiscountDto()!= null) {
-            if(filterDto.getFilterDiscountDto().getSpecification() != null
-                    && filterDto.getFilterDiscountDto().getSpecification().getName() != null
-            ){
-                setValueIfNotEmpty(criteriaList, Place_.DISCOUNT_VALUES, Specification_.NAME,
-                        filterDto.getFilterDiscountDto().getSpecification().getName());
-            }
-            criteriaList.add(SearchCriteria.builder()
-                    .key(Place_.DISCOUNT_VALUES)
-                    .type("discountRange")
-                    .value(new String[] {String.valueOf(filterDto.getFilterDiscountDto().getDiscountMin()),
-                            String.valueOf(filterDto.getFilterDiscountDto().getDiscountMax())})
-                    .build()
-            );
-        }
-        return criteriaList;
-    }
-
-    private void setValueIfNotEmpty(List<SearchCriteria> searchCriteria, String key, String type, String value) {
-        if (!StringUtils.isEmpty(value)) {
-            searchCriteria.add(SearchCriteria.builder()
-                    .key(key)
-                    .type(type)
-                    .value(value)
-                    .build());
-        }
     }
 
     @Override
