@@ -30,11 +30,24 @@ public interface PlaceService {
      *
      * @param id of the {@link PlaceUpdateDto} entity to retrieve.
      */
-
     PlaceUpdateDto getPlaceById(Long id);
+  
+    /**
+     * Method adds user to favorites
+     *
+     * @param userVO of the {@link UserVO}
+     * @param id of the {@link Place} entity to add.
+     */
+    void addPlaceToFavorite(UserVO user, Long placeId);
 
-
-
+      /**
+     * Method remove user from favorites
+     *
+     * @param userVO of the {@link UserVO}
+     * @param id of the {@link Place} entity to add.
+     */
+    void removePlaceFromFavorite(UserVO user, Long placeId);
+  
     /**
      * Method subscribe for email notification about place updates
      *

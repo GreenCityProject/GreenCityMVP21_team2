@@ -21,7 +21,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import java.util.List;
 
 @RestController
@@ -102,6 +101,45 @@ public class PlaceController {
     }
 
     /**
+     * The method which save new Place to User's favorite places list.
+     *
+     * @param id - place's id to add to favorites.
+     *
+     * @author Vasyl Shtoiko
+     */
+    @Operation(summary = "Add available places to Favorites")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED)
+    })
+    @PostMapping("/favorite/{id}")
+    public ResponseEntity<Void> savePlaceToFavorite(@Parameter(hidden = true) @CurrentUser UserVO user,
+                                                    @PathVariable Long id){
+        placeService.addPlaceToFavorite(user, id);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    /**
+     * The method which save new Place.
+     *
+     * @param id - place's id to remove from favorites.
+     *
+     * @author Vasyl Shtoiko
+     */
+    @Operation(summary = "Remove available places from Favorites")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED)
+    })
+    @DeleteMapping("/favorite/{id}")
+    public ResponseEntity<Void> removePlaceFromFavorite(@Parameter(hidden = true) @CurrentUser UserVO user,
+                                                        @PathVariable Long id){
+        placeService.removePlaceFromFavorite(user, id);
+        return ResponseEntity.status(HttpStatus.OK).build();
+      
+     /**
      * Method for subscribing email notification about place updates.
      *
      * @param placeSubscribeDto of the {@link PlaceSubscribeResponseDto} with EmailNotification.
