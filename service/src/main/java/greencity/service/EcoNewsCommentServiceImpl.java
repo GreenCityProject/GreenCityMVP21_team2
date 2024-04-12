@@ -2,9 +2,11 @@ package greencity.service;
 
 import greencity.annotations.RatingCalculationEnum;
 import greencity.constant.ErrorMessage;
+import greencity.dto.notification.NotificationDto;
 import greencity.dto.PageableDto;
 import greencity.dto.econews.EcoNewsVO;
 import greencity.dto.econewscomment.*;
+import greencity.dto.notification.TaggedUserNotificationDto;
 import greencity.dto.user.UserVO;
 import greencity.entity.EcoNews;
 import greencity.entity.EcoNewsComment;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import static greencity.constant.AppConstant.AUTHORIZATION;
+import static greencity.enums.NotificationType.*;
 
 @Service
 @AllArgsConstructor
@@ -38,6 +41,8 @@ public class EcoNewsCommentServiceImpl implements EcoNewsCommentService {
     private final greencity.rating.RatingCalculation ratingCalculation;
     private final HttpServletRequest httpServletRequest;
     private final EcoNewsRepo ecoNewsRepo;
+    private final NotificationService notificationService;
+    private final TaggedUsersService taggedUsersService;
 
     /**
      * Method to save {@link greencity.entity.EcoNewsComment}.
@@ -64,14 +69,37 @@ public class EcoNewsCommentServiceImpl implements EcoNewsCommentService {
                     () -> new BadRequestException(ErrorMessage.COMMENT_NOT_FOUND_EXCEPTION));
             if (parentComment.getParentComment() == null) {
                 ecoNewsComment.setParentComment(parentComment);
+                UserVO commentOwnerVO = modelMapper.map(parentComment.getUser(), UserVO.class);
+                createCommentRepliedNotification(userVO, parentComment, commentOwnerVO);
             } else {
                 throw new BadRequestException(ErrorMessage.CANNOT_REPLY_THE_REPLY);
             }
         }
+
+        createCommentedNewsNotification(userVO, ecoNewsVO);
+        createTaggedUserNotification(userVO,econewsId, addEcoNewsCommentDtoRequest.getText());
+
         String accessToken = httpServletRequest.getHeader(AUTHORIZATION);
         CompletableFuture.runAsync(
             () -> ratingCalculation.ratingCalculation(RatingCalculationEnum.ADD_COMMENT, userVO, accessToken));
         return modelMapper.map(ecoNewsCommentRepo.save(ecoNewsComment), AddEcoNewsCommentDtoResponse.class);
+    }
+
+    private void createCommentRepliedNotification(UserVO userVO, EcoNewsComment parentComment, UserVO commentOwnerVO) {
+        NotificationDto notification = new NotificationDto(userVO, REPLIED_NEWS_COMMENT, commentOwnerVO, parentComment.getId());
+        notificationService.createNotification(notification);
+    }
+
+    private void createCommentedNewsNotification(UserVO userVO, EcoNewsVO ecoNewsVO) {
+        NotificationDto notification = new NotificationDto(userVO, COMMENTED_NEWS, ecoNewsVO.getAuthor(), ecoNewsVO.getId());
+        notificationService.createNotification(notification);
+    }
+
+    private void createTaggedUserNotification(UserVO userVO, Long ecoNewsId, String text) {
+        List<UserVO> taggedUsers = taggedUsersService.findTaggedUsersFromText(text);
+        TaggedUserNotificationDto notification = new TaggedUserNotificationDto(userVO, TAGGED_USER_UNDER_NEWS ,
+                taggedUsers, ecoNewsId);
+        notificationService.createTaggedUserNotifications(notification);
     }
 
     /**
@@ -199,8 +227,14 @@ public class EcoNewsCommentServiceImpl implements EcoNewsCommentService {
             ecoNewsService.unlikeComment(userVO, ecoNewsCommentVO);
         } else {
             ecoNewsService.likeComment(userVO, ecoNewsCommentVO);
+            createLikedNewsCommentNotification(userVO, ecoNewsCommentVO);
         }
         ecoNewsCommentRepo.save(modelMapper.map(ecoNewsCommentVO, EcoNewsComment.class));
+    }
+
+    private void createLikedNewsCommentNotification(UserVO userVO, EcoNewsCommentVO ecoNewsCommentVO) {
+        NotificationDto notification = new NotificationDto(userVO, LIKED_NEWS_COMMENT, ecoNewsCommentVO.getUser(), ecoNewsCommentVO.getId());
+        notificationService.createNotification(notification);
     }
 
     /**

@@ -4,6 +4,7 @@ import greencity.annotations.RatingCalculationEnum;
 import greencity.client.RestClient;
 import greencity.constant.CacheConstants;
 import greencity.constant.ErrorMessage;
+import greencity.dto.notification.NotificationDto;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.PageableDto;
 import greencity.dto.econews.*;
@@ -16,6 +17,7 @@ import greencity.dto.user.PlaceAuthorDto;
 import greencity.dto.user.UserVO;
 import greencity.entity.*;
 import greencity.entity.localization.TagTranslation;
+import greencity.enums.NotificationType;
 import greencity.enums.Role;
 import greencity.enums.TagType;
 import greencity.exception.exceptions.BadRequestException;
@@ -59,6 +61,7 @@ public class EcoNewsServiceImpl implements EcoNewsService {
     private final greencity.rating.RatingCalculation ratingCalculation;
     private final HttpServletRequest httpServletRequest;
     private final EcoNewsSearchRepo ecoNewsSearchRepo;
+    private final NotificationService notificationService;
     private final List<String> languageCode = List.of("en", "ua");
 
     /**
@@ -519,6 +522,9 @@ public class EcoNewsServiceImpl implements EcoNewsService {
             ecoNewsVO.getUsersLikedNews().removeIf(u -> u.getId().equals(userVO.getId()));
         } else {
             ecoNewsVO.getUsersLikedNews().add(userVO);
+
+            NotificationDto notification = new NotificationDto(userVO, NotificationType.LIKED_NEWS, ecoNewsVO.getAuthor(), ecoNewsVO.getId());
+            notificationService.createNotification(notification);
         }
         ecoNewsRepo.save(modelMapper.map(ecoNewsVO, EcoNews.class));
     }

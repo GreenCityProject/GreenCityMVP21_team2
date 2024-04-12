@@ -16,6 +16,7 @@ import greencity.dto.habittranslation.HabitTranslationDto;
 import greencity.dto.language.LanguageDTO;
 import greencity.dto.language.LanguageTranslationDTO;
 import greencity.dto.language.LanguageVO;
+import greencity.dto.notification.NotificationVO;
 import greencity.dto.shoppinglistitem.*;
 import greencity.dto.tag.TagPostDto;
 import greencity.dto.tag.TagTranslationVO;
@@ -38,6 +39,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import static greencity.enums.NotificationStatus.UNREAD;
 
 public class ModelUtils {
 
@@ -417,6 +420,30 @@ public class ModelUtils {
                 new CustomShoppingListItemSaveRequestDto("text3"));
 
         return  new BulkSaveCustomShoppingListItemDto(items);
+    }
+
+    public static Notification getNotification() {
+        return Notification.builder()
+                .id(1L)
+                .status(UNREAD)
+                .type(NotificationType.LIKED_EVENT)
+                .receiver(getUser())
+                .evaluator(getUser())
+                .createdAt(LocalDateTime.now())
+                .expireAt(LocalDateTime.now().plusDays(AppConstant.NOTIFIC_ACTIVE_DAYS_TIME))
+                .build();
+    }
+
+    public static NotificationVO getNotificationDto() {
+        var notification = getNotification();
+        return NotificationVO.builder()
+                .id(notification.getId())
+                .createdAt(notification.getCreatedAt())
+                .relatedEntityId(1L)
+                .evaluatorId(notification.getEvaluator().getId())
+                .status(UNREAD)
+                .type(NotificationType.LIKED_EVENT)
+                .build();
     }
 
 }
